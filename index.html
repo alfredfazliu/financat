@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Financat">
-<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121517" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -16,31 +16,32 @@
 <style>
 :root{
   color-scheme:light;
-  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#1B2024; --muted:#646B70; --line:#DDE0DA;
-  --accent:#1E4FA0; --accent-ink:#FFFFFF; --accent-soft:#E3EAF6;
+  --bg:#FFFFFF; --surface:#FFFFFF; --field:#FAFAFA; --ink:#000000; --muted:#737373; --line:#DBDBDB;
+  --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#E0F1FE;
+  --grad:linear-gradient(45deg,#FEDA75 0%,#FA7E1E 22%,#D62976 50%,#962FBF 78%,#4F5BD5 100%); --grad-btn:linear-gradient(90deg,#F58529,#DD2A7B 50%,#8134AF);
   --danger:#B3261E; --warn:#A96A00;
   --c1:#1E4FA0; --c2:#C0762A; --c3:#2E7D5B; --c4:#8A4FA3; --c5:#B3443B; --c6:#3A8FA8; --c7:#7A6A2E; --c8:#6B7278;
   --display:ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
   --body:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-  --glass:rgba(255,255,255,.72); --shadow:0 1px 2px rgba(20,30,50,.06),0 8px 24px rgba(20,30,50,.06);
+  --glass:rgba(255,255,255,.92); --shadow:none;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#121517; --surface:#1B1F22; --ink:#E9ECEA; --muted:#9AA1A5; --line:#2C3236;
-    --accent:#7FA6E8; --accent-ink:#0D1A30; --accent-soft:#1D2A40;
+    --bg:#000000; --surface:#000000; --field:#121212; --ink:#F5F5F5; --muted:#A8A8A8; --line:#262626;
+    --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#0B2A40;
     --danger:#F08A80; --warn:#E3AE55;
     --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
-    --glass:rgba(27,31,34,.72); --shadow:none;
+    --glass:rgba(0,0,0,.92); --shadow:none;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#121517; --surface:#1B1F22; --ink:#E9ECEA; --muted:#9AA1A5; --line:#2C3236;
-  --accent:#7FA6E8; --accent-ink:#0D1A30; --accent-soft:#1D2A40;
+  --bg:#000000; --surface:#000000; --field:#121212; --ink:#F5F5F5; --muted:#A8A8A8; --line:#262626;
+  --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#0B2A40;
   --danger:#F08A80; --warn:#E3AE55;
   --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
-    --glass:rgba(27,31,34,.72); --shadow:none;
+    --glass:rgba(0,0,0,.92); --shadow:none;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -61,12 +62,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
   background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
   background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 
-.hero{display:flex;flex-direction:column;gap:6px;padding:20px;border-radius:24px;color:#fff;background:radial-gradient(120% 140% at 100% 0%,#4F86E8 0%,#2458B8 45%,#16377A 100%);box-shadow:0 12px 30px rgba(30,79,160,.28);position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08)}
-.hero .eyebrow,.hero .sub,.hero .budget-row{color:rgba(255,255,255,.78)}
-.hero .bar{background:rgba(255,255,255,.22)}
-.hero .bar>i{background:#fff}
-.hero .bar.over>i{background:#FFB4AB}
+.hero{display:flex;flex-direction:column;gap:6px;padding-block:4px 8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
 .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
 .total{font-family:var(--display);font-weight:800;font-size:42px;line-height:1;letter-spacing:-.02em}
 .sub{color:var(--muted);font-size:14px}
@@ -91,8 +87,8 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .row:first-child{border-top:0}
 .dot{width:38px;height:38px;border-radius:11px;display:grid;place-items:center}
 .dot svg{width:20px;height:20px}
-.row:active{background:var(--bg)}
-.list,.card{box-shadow:var(--shadow);border-color:transparent}
+.row:active{background:var(--field)}
+.list,.card{box-shadow:none}
 .btn,.fab,.chip,.lnk{transition:transform .12s ease}
 .btn:active,.fab:active,.chip:active,.lnk:active{transform:scale(.96)}
 .donut{display:flex;align-items:center;gap:18px}
@@ -120,30 +116,33 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .tabbar-in{max-width:520px;width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
 .tab{border:0;background:transparent;padding:8px;font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
 .tab svg{width:22px;height:22px}
-.tab[aria-selected="true"]{color:var(--accent)}
-.fab{width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 18px rgba(30,79,160,.35)}
+.tab{color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"] svg{stroke-width:2.6}
+.fab{width:56px;height:56px;border-radius:18px;border:0;background:transparent;color:var(--ink);display:grid;place-items:center;border:2px solid var(--ink)!important;width:40px;height:40px;border-radius:11px}
+.fab svg{width:22px!important;height:22px!important}
 .fab svg{width:26px;height:26px}
 
 .scrim{position:fixed;inset:0;background:rgba(10,14,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
-.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
+.sheet{background:var(--surface);border-top:1px solid var(--line);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
 .sheet-h{display:flex;justify-content:space-between;align-items:center}
 .sheet-h h3{margin:0;font-family:var(--display);font-size:19px}
 .x{border:0;background:transparent;color:var(--muted);font-weight:600;padding:6px}
-.amount-in{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+.amount-in{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--line);padding-bottom:4px}
 .amount-in input{-webkit-appearance:none;appearance:none;padding:0;border:0;background:transparent;font-family:var(--display);font-size:40px;font-weight:700;width:100%;outline:none;min-width:0}
 .amount-in span{font-family:var(--display);font-size:28px;color:var(--muted)}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
-.field input,.field select{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:10px;padding:0 12px;height:48px;line-height:48px;background:var(--bg);font-size:16px;width:100%;min-width:0;margin:0;display:block;text-align:left}
+.field input,.field select{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:10px;padding:0 12px;height:48px;line-height:48px;background:var(--field);font-size:16px;width:100%;min-width:0;margin:0;display:block;text-align:left}
 .field input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
 .field{min-width:0}
 .cats{display:flex;flex-wrap:wrap;gap:8px}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:end}
-.btn{border:0;border-radius:12px;padding:14px;font-weight:600;font-size:16px;background:var(--accent);color:var(--accent-ink)}
+.btn{border:0;border-radius:8px;padding:12px;font-weight:600;font-size:15px;background:var(--accent);color:#fff}
 .btn.ghost{background:transparent;color:var(--danger);border:1px solid var(--line)}
 .btn.danger{background:var(--danger);color:#fff}
 .err{color:var(--danger);font-size:13px;margin:0}
-.confirm{display:flex;flex-direction:column;gap:10px;background:var(--bg);border-radius:12px;padding:12px}
+.confirm{display:flex;flex-direction:column;gap:10px;background:var(--field);border-radius:12px;padding:12px}
 .confirm p{margin:0;font-size:14px}
 .settings{display:flex;flex-direction:column;gap:12px}
 .lnk{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;text-align:left;font-weight:600}
@@ -161,7 +160,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   .app,.tabbar,.scrim,.toast{display:none!important}
   .report{display:block;font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:10.5pt;color:#111}
   .report h1{font-size:20pt;margin:0 0 2pt}
-  .report h2{font-size:12pt;margin:16pt 0 6pt;border-bottom:1.5pt solid #1E4FA0;padding-bottom:3pt;color:#1E4FA0}
+  .report h2{font-size:12pt;margin:16pt 0 6pt;border-bottom:1.5pt solid #D62976;padding-bottom:3pt;color:#B81F66}
   .report .meta{color:#555;margin:0 0 12pt}
   .report .kpis{display:flex;gap:10pt}
   .report .kpi{flex:1;border:1pt solid #d5d9e0;border-radius:6pt;padding:8pt 10pt}
@@ -381,6 +380,7 @@ function renderMonths(ex){
   const W=320,H=170,top=22,bottom=24,bw=Math.min(40,(W-20)/keys.length-14),max=Math.max(...vals);
   const step=(W-20)/keys.length;
   let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Shpenzimet sipas muajit">`;
+  svg+=`<defs><linearGradient id="ig" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F58529"/><stop offset=".5" stop-color="#DD2A7B"/><stop offset="1" stop-color="#8134AF"/></linearGradient></defs>`;
   svg+=`<line x1="0" x2="${W}" y1="${H-bottom}" y2="${H-bottom}" stroke="var(--line)"/>`;
   keys.forEach((k,i)=>{
     const h=(vals[i]/max)*(H-top-bottom),x=10+step*i+(step-bw)/2,y=H-bottom-h;
