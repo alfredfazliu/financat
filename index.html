@@ -154,6 +154,28 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   .sheet{animation:up .22s ease-out}
   @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
 }
+.report{display:none}
+@media print{
+  @page{size:A4;margin:16mm 14mm}
+  html,body{background:#fff!important;color:#111!important;padding:0!important}
+  .app,.tabbar,.scrim,.toast{display:none!important}
+  .report{display:block;font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:10.5pt;color:#111}
+  .report h1{font-size:20pt;margin:0 0 2pt}
+  .report h2{font-size:12pt;margin:16pt 0 6pt;border-bottom:1.5pt solid #1E4FA0;padding-bottom:3pt;color:#1E4FA0}
+  .report .meta{color:#555;margin:0 0 12pt}
+  .report .kpis{display:flex;gap:10pt}
+  .report .kpi{flex:1;border:1pt solid #d5d9e0;border-radius:6pt;padding:8pt 10pt}
+  .report .kpi b{display:block;font-size:15pt;margin-top:2pt}
+  .report .kpi span{color:#555;font-size:9pt;text-transform:uppercase;letter-spacing:.05em}
+  .report table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .report th{text-align:left;font-size:9pt;color:#555;text-transform:uppercase;letter-spacing:.04em;border-bottom:1pt solid #999;padding:4pt}
+  .report td{padding:4pt;border-bottom:.5pt solid #ddd;vertical-align:top}
+  .report td.r,.report th.r{text-align:right;white-space:nowrap}
+  .report tr.m td{background:#f0f3f8;font-weight:600}
+  .report tfoot td{font-weight:700;border-top:1.5pt solid #111;border-bottom:0}
+  .report tr{break-inside:avoid}
+  .report .foot{margin-top:14pt;color:#777;font-size:8.5pt}
+}
 </style>
 </head>
 <body>
@@ -198,6 +220,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
         <button class="btn" id="saveProj" type="button">Ruaj projektin</button>
       </div>
       <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>P.sh. "Shpenzime ditore" ose "Makina"</small></button>
+      <button class="lnk" id="pdfBtn" type="button">Eksporto në PDF<small>Raport me totalet dhe të gjitha shpenzimet. Në iPhone shtyp Share → Save to Files.</small></button>
       <button class="lnk" id="exportBtn" type="button">Eksporto në Excel (CSV)<small>Ruan një skedar me shpenzimet e projektit, që hapet në Excel ose Numbers</small></button>
       <button class="lnk" id="backupBtn" type="button">Ruaj kopje rezervë<small>Ruan të gjitha të dhënat në një skedar. Ruaje në iCloud Drive herë pas here.</small></button>
       <label class="lnk" for="restoreIn" style="cursor:pointer">Rikthe nga kopja rezervë<small>Zëvendëson të dhënat në telefon me ato të skedarit</small></label>
@@ -248,6 +271,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   </form>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="report" id="report" aria-hidden="true"></div>
 
 <script>
 (function(){
@@ -422,6 +446,29 @@ function download(name,text,type){
   const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
 }
+$('pdfBtn').onclick=()=>{
+  const p=proj();const ex=p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const tot=ex.reduce((s,e)=>s+e.amount,0);
+  const cn=id=>(CATS.find(c=>c.id===id)||CATS[7]).n;
+  const dfull=s=>{const [y,m,d]=s.split('-');return +d+' '+MONTHS[+m-1]+' '+y};
+  const byC=CATS.map(c=>({n:c.n,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0),k:ex.filter(e=>e.cat===c.id).length})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const kpi=(l,v)=>`<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
+  let h=`<h1>Raport i shpenzimeve · ${esc(p.name)}</h1><p class="meta">Krijuar më ${dfull(today())}${ex.length?' · periudha '+dfull(ex[0].date)+' – '+dfull(ex[ex.length-1].date):''}</p>`;
+  h+='<div class="kpis">'+kpi('Shpenzuar gjithsej',eur(tot))+kpi('Numri i shpenzimeve',ex.length)+(p.budget>0?kpi(tot<=p.budget?'Mbeten nga buxheti':'Tejkaluar buxheti',eur(Math.abs(p.budget-tot))+' <small style="font-weight:400;color:#555">nga '+eur0(p.budget)+'</small>'):'')+'</div>';
+  h+='<h2>Sipas kategorisë</h2><table><thead><tr><th>Kategoria</th><th class="r">Shpenzime</th><th class="r">%</th><th class="r">Shuma</th></tr></thead><tbody>'+
+    byC.map(x=>`<tr><td>${x.n}</td><td class="r">${x.k}</td><td class="r">${tot?Math.round(x.v/tot*100):0}%</td><td class="r">${eur(x.v)}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>Gjithsej</td><td class="r">${ex.length}</td><td class="r">100%</td><td class="r">${eur(tot)}</td></tr></tfoot></table>`;
+  h+='<h2>Të gjitha shpenzimet</h2><table><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Dyqani / Punëtori</th><th class="r">Shuma</th></tr></thead><tbody>';
+  let cur='';
+  ex.forEach(e=>{const k=e.date.slice(0,7);
+    if(k!==cur){cur=k;const mt=ex.filter(x=>x.date.startsWith(k)).reduce((s,x)=>s+x.amount,0);const [y,m]=k.split('-');
+      h+=`<tr class="m"><td colspan="4" style="text-transform:capitalize">${MONTHS[+m-1]} ${y}</td><td class="r">${eur(mt)}</td></tr>`}
+    h+=`<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${esc(e.note||'')}</td><td>${cn(e.cat)}</td><td>${esc(e.shop||'')}</td><td class="r">${eur(e.amount)}</td></tr>`});
+  h+=`</tbody><tfoot><tr><td colspan="4">Gjithsej</td><td class="r">${eur(tot)}</td></tr></tfoot></table><p class="foot">Financat</p>`;
+  $('report').innerHTML=h;
+  const old=document.title;document.title='Financat-'+p.name+'-'+today();
+  setTimeout(()=>{window.print();setTimeout(()=>document.title=old,1000)},50);
+};
 $('exportBtn').onclick=()=>{
   const p=proj();const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
   const lines=['Data;Shuma (€);Kategoria;Përshkrimi;Dyqani/Punëtori'].concat(p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
