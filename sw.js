@@ -1,5 +1,5 @@
 // Cache the app so it opens offline. Bump VERSION on every release.
-const VERSION = 'financat-v4';
+const VERSION = 'financat-v5';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -9,9 +9,9 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  // Network first so updates arrive; fall back to cache when offline.
+  // Network first (bypassing the HTTP cache) so updates arrive; fall back to cache when offline.
   e.respondWith(
-    fetch(e.request).then(r => {
+    fetch(e.request, { cache: 'no-cache' }).then(r => {
       if (r.ok && new URL(e.request.url).origin === location.origin) {
         const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy));
       }

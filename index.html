@@ -46,7 +46,7 @@
 [hidden]{display:none!important}
 body{margin:0}
 html,body{height:100%}
-html{padding-top:env(safe-area-inset-top,0px)}
+html{padding-top:max(env(safe-area-inset-top,0px),var(--sat,0px))}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -488,7 +488,23 @@ $('restoreIn').onchange=e=>{
 };
 $('restoreYes').onclick=()=>{if(pending){S=pending;pending=null;save();$('restoreBox').hidden=true;render();toast('Të dhënat u rikthyen')}};
 $('restoreNo').onclick=()=>{pending=null;$('restoreBox').hidden=true};
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Some iOS versions draw a home-screen app under the status bar but report a 0 safe-area inset.
+(function(){
+  const standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  if(!standalone)return;
+  const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden';
+  document.body.appendChild(probe);
+  if(probe.offsetHeight===0)document.documentElement.style.setProperty('--sat',(screen.height>=900?62:screen.height>=812?50:20)+'px');
+  probe.remove();
+})();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{})});
+  }).catch(()=>{});
+  // A new version took over: reload once so the screen shows it.
+  let reloaded=false;
+  if(navigator.serviceWorker.controller)navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloaded){reloaded=true;location.reload()}});
+}
 render();
 })();
 </script>
