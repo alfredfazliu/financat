@@ -138,7 +138,8 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .cats-scroll::-webkit-scrollbar{display:none}
 .cats-scroll .chip{flex:none}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.pad button{height:50px;border:0;border-radius:10px;background:var(--field);font-size:24px;font-weight:500;font-family:var(--display);display:grid;place-items:center;-webkit-user-select:none;user-select:none}
+.sheet>*{flex-shrink:0}
+.pad button{height:46px;border:0;border-radius:10px;background:var(--field);font-size:24px;font-weight:500;font-family:var(--display);display:grid;place-items:center;-webkit-user-select:none;user-select:none}
 .pad button:active{background:var(--line)}
 .pad svg{width:26px;height:26px}
 .photo{display:flex;align-items:center;gap:12px}
@@ -274,7 +275,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <div class="grab" id="grab"></div>
     <div class="sheet-h" id="sheetHead"><h3 id="formTitle">Shpenzim i ri</h3><button class="x" type="button" id="closeForm">Anulo</button></div>
     <div class="amount-in"><output class="amt num zero" id="fAmount" aria-label="Shuma">0</output><span>€</span></div>
-    <div class="cats cats-scroll" id="fCats" role="radiogroup" aria-label="Kategoria"></div>
+    <div class="cats" id="fCats" role="radiogroup" aria-label="Kategoria"></div>
     <div class="pad" id="pad" aria-label="Tastiera e numrave">
       <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
       <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
