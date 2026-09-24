@@ -1,13 +1,7 @@
-# demo-repo
+# Financat
 
-Some text over here!
+Aplikacion personal për ndjekjen e shpenzimeve, fillimisht për rregullimin e banesës.
 
-## Subheader
-
-Some changes!! 
-
-## feature
-1. Some changes from feature branch!
-2. ....
-...
-
+- Hapet si aplikacion në iPhone: Safari → Share → "Add to Home Screen".
+- Të dhënat ruhen vetëm në telefon. Bëj herë pas here "Ruaj kopje rezervë" te Cilësimet.
+- Punon edhe pa internet (service worker në `sw.js`; rrit `VERSION` në çdo ndryshim).

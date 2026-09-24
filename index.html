@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Financat">
+<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121517" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Financat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#1B2024; --muted:#646B70; --line:#DDE0DA;
+  --accent:#1E4FA0; --accent-ink:#FFFFFF; --accent-soft:#E3EAF6;
+  --danger:#B3261E; --warn:#A96A00;
+  --c1:#1E4FA0; --c2:#C0762A; --c3:#2E7D5B; --c4:#8A4FA3; --c5:#B3443B; --c6:#3A8FA8; --c7:#7A6A2E; --c8:#6B7278;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121517; --surface:#1B1F22; --ink:#E9ECEA; --muted:#9AA1A5; --line:#2C3236;
+    --accent:#7FA6E8; --accent-ink:#0D1A30; --accent-soft:#1D2A40;
+    --danger:#F08A80; --warn:#E3AE55;
+    --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121517; --surface:#1B1F22; --ink:#E9ECEA; --muted:#9AA1A5; --line:#2C3236;
+  --accent:#7FA6E8; --accent-ink:#0D1A30; --accent-soft:#1D2A40;
+  --danger:#F08A80; --warn:#E3AE55;
+  --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+html,body{height:100%}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+.app{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:12px 120px;display:flex;flex-direction:column;gap:16px}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em}
+.projsel{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 30px 7px 14px;font-weight:600;font-size:14px;max-width:60%;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+
+.hero{display:flex;flex-direction:column;gap:6px;padding-block:6px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.total{font-family:var(--display);font-weight:700;font-size:44px;line-height:1;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:14px}
+.budget{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.over>i{background:var(--danger)}
+.budget-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+.sample{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--accent-soft);border-radius:12px;padding:10px 12px;font-size:13px}
+.sample button{border:0;background:transparent;color:var(--accent);font-weight:600;padding:4px 6px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.month{display:flex;flex-direction:column;gap:2px}
+.month-h{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px 6px;font-size:13px;color:var(--muted);font-weight:600;text-transform:capitalize}
+.list{background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.row{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.dot{width:10px;height:10px;border-radius:50%}
+.row .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .m{font-size:12.5px;color:var(--muted)}
+.row .a{font-weight:600}
+.row>div{min-width:0}
+.empty{text-align:center;color:var(--muted);padding:40px 12px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.card h2{font-family:var(--display);font-size:17px;margin:0;font-weight:600}
+.cat-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.cat-row .bar{grid-column:1/-1;height:6px}
+.cat-row .pct{color:var(--muted);font-size:12.5px;margin-left:6px}
+.months svg{width:100%;height:auto;display:block}
+.months text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.months .v{fill:var(--ink);font-weight:600}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:8px 16px calc(8px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center}
+.tabbar-in{max-width:520px;width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.tab{border:0;background:transparent;padding:8px;font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab svg{width:22px;height:22px}
+.tab[aria-selected="true"]{color:var(--accent)}
+.fab{width:56px;height:56px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 18px rgba(30,79,160,.35)}
+.fab svg{width:26px;height:26px}
+
+.scrim{position:fixed;inset:0;background:rgba(10,14,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
+.sheet-h{display:flex;justify-content:space-between;align-items:center}
+.sheet-h h3{margin:0;font-family:var(--display);font-size:19px}
+.x{border:0;background:transparent;color:var(--muted);font-weight:600;padding:6px}
+.amount-in{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+.amount-in input{-webkit-appearance:none;appearance:none;padding:0;border:0;background:transparent;font-family:var(--display);font-size:40px;font-weight:700;width:100%;outline:none;min-width:0}
+.amount-in span{font-family:var(--display);font-size:28px;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.field input,.field select{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:10px;padding:0 12px;height:48px;line-height:48px;background:var(--bg);font-size:16px;width:100%;min-width:0;margin:0;display:block;text-align:left}
+.field input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+.field{min-width:0}
+.cats{display:flex;flex-wrap:wrap;gap:8px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:end}
+.btn{border:0;border-radius:12px;padding:14px;font-weight:600;font-size:16px;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--danger);border:1px solid var(--line)}
+.btn.danger{background:var(--danger);color:#fff}
+.err{color:var(--danger);font-size:13px;margin:0}
+.confirm{display:flex;flex-direction:column;gap:10px;background:var(--bg);border-radius:12px;padding:12px}
+.confirm p{margin:0;font-size:14px}
+.settings{display:flex;flex-direction:column;gap:12px}
+.lnk{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;text-align:left;font-weight:600}
+.lnk small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:20}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:up .22s ease-out}
+  @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand">Financat</div>
+    <select class="projsel" id="projSel" aria-label="Projekti"></select>
+  </header>
+
+  <div id="sampleNote" class="sample" hidden>
+    <span>Këto janë shpenzime shembull, që të shohësh si duket aplikacioni.</span>
+    <button id="clearSample" type="button">Fshiji</button>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow" id="heroLabel">Shpenzuar gjithsej</div>
+    <div class="total num" id="total">0 €</div>
+    <div class="sub num" id="heroSub"></div>
+    <div class="budget" id="budgetBox" hidden>
+      <div class="bar" id="budgetBar"><i></i></div>
+      <div class="budget-row num"><span id="budgetUsed"></span><span id="budgetLeft"></span></div>
+    </div>
+  </section>
+
+  <main id="viewList">
+    <div class="chips" id="filterChips" role="toolbar" aria-label="Filtro sipas kategorisë"></div>
+    <div id="months"></div>
+  </main>
+
+  <main id="viewSummary" hidden>
+    <div class="card"><h2>Sipas kategorisë</h2><div id="byCat" style="display:flex;flex-direction:column;gap:12px"></div></div>
+    <div class="card months" style="margin-top:16px"><h2>Sipas muajit</h2><div id="byMonth"></div></div>
+  </main>
+
+  <main id="viewSettings" hidden>
+    <div class="settings">
+      <div class="card">
+        <h2>Projekti</h2>
+        <div class="field"><label for="projName">Emri</label><input id="projName" type="text"></div>
+        <div class="field"><label for="projBudget">Buxheti (opsional)</label><input id="projBudget" type="number" inputmode="decimal" placeholder="p.sh. 25000"></div>
+        <button class="btn" id="saveProj" type="button">Ruaj projektin</button>
+      </div>
+      <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>P.sh. "Shpenzime ditore" ose "Makina"</small></button>
+      <button class="lnk" id="exportBtn" type="button">Eksporto në Excel (CSV)<small>Ruan një skedar me shpenzimet e projektit, që hapet në Excel ose Numbers</small></button>
+      <button class="lnk" id="backupBtn" type="button">Ruaj kopje rezervë<small>Ruan të gjitha të dhënat në një skedar. Ruaje në iCloud Drive herë pas here.</small></button>
+      <label class="lnk" for="restoreIn" style="cursor:pointer">Rikthe nga kopja rezervë<small>Zëvendëson të dhënat në telefon me ato të skedarit</small></label>
+      <input type="file" id="restoreIn" accept=".json,application/json" hidden>
+      <div id="restoreBox" class="confirm" hidden>
+        <p id="restoreMsg"></p>
+        <div class="two"><button class="btn danger" type="button" id="restoreYes">Po, rikthe</button><button class="btn ghost" style="color:var(--ink)" type="button" id="restoreNo">Jo</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="tabbar" aria-label="Navigimi">
+  <div class="tabbar-in" role="tablist">
+    <div style="display:flex;justify-content:space-around">
+      <button class="tab" role="tab" data-view="list" aria-selected="true" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Shpenzimet</button>
+      <button class="tab" role="tab" data-view="summary" aria-selected="false" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Përmbledhja</button>
+    </div>
+    <button class="fab" id="addBtn" type="button" aria-label="Shto shpenzim">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    <div style="display:flex;justify-content:space-around">
+      <button class="tab" role="tab" data-view="settings" aria-selected="false" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Cilësimet</button>
+    </div>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim" hidden>
+  <form class="sheet" id="form" novalidate>
+    <div class="sheet-h"><h3 id="formTitle">Shpenzim i ri</h3><button class="x" type="button" id="closeForm">Anulo</button></div>
+    <div class="amount-in"><input id="fAmount" type="text" inputmode="decimal" placeholder="0,00" aria-label="Shuma" autocomplete="off"><span>€</span></div>
+    <div class="field"><label for="fNote">Përshkrimi</label><input id="fNote" type="text" placeholder="p.sh. Pllaka për banjën" autocomplete="off"></div>
+    <div class="field"><label>Kategoria</label><div class="cats" id="fCats" role="radiogroup" aria-label="Kategoria"></div></div>
+    <div class="two">
+      <div class="field"><label for="fDate">Data</label><input id="fDate" type="date"></div>
+      <div class="field"><label for="fShop">Dyqani / Punëtori</label><input id="fShop" type="text" placeholder="opsional" autocomplete="off"></div>
+    </div>
+    <p class="err" id="fErr" hidden></p>
+    <button class="btn" type="submit" id="fSave">Ruaj</button>
+    <button class="btn ghost" type="button" id="fDelete" hidden>Fshije shpenzimin</button>
+    <div class="confirm" id="fConfirm" hidden>
+      <p>Ta fshij këtë shpenzim? Nuk mund të kthehet mbrapsht.</p>
+      <div class="two"><button class="btn danger" type="button" id="fDelYes">Po, fshije</button><button class="btn ghost" style="color:var(--ink)" type="button" id="fDelNo">Jo</button></div>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const KEY='financat.v1';
+const CATS=[
+  {id:'materiale',n:'Materiale ndërtimi',c:'--c1'},
+  {id:'mobilje',n:'Mobilje',c:'--c2'},
+  {id:'pajisje',n:'Pajisje',c:'--c3'},
+  {id:'puntore',n:'Punëtorë',c:'--c4'},
+  {id:'elektrike',n:'Elektrike',c:'--c5'},
+  {id:'hidraulike',n:'Hidraulike',c:'--c6'},
+  {id:'ngjyrosje',n:'Ngjyrosje',c:'--c7'},
+  {id:'tjera',n:'Tjera',c:'--c8'}
+];
+const MONTHS=['janar','shkurt','mars','prill','maj','qershor','korrik','gusht','shtator','tetor','nëntor','dhjetor'];
+const MSHORT=['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gus','Sht','Tet','Nën','Dhj'];
+const $=id=>document.getElementById(id);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const eur=v=>{const s=Math.abs(v).toFixed(2).split('.');return (v<0?'-':'')+s[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+s[1]+' €'};
+const eur0=v=>Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')+' €';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtDate=s=>{const [y,m,d]=s.split('-');return +d+' '+MONTHS[+m-1]};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!Array.isArray(S.projects)||!S.projects.length)S={projects:[{id:'banesa',name:'Banesa',budget:0,expenses:[]}],current:'banesa',view:'list'};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const proj=()=>S.projects.find(p=>p.id===S.current)||S.projects[0];
+let filter='all', editing=null, fCat='materiale';
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,1800)}
+
+function render(){
+  const p=proj();
+  $('projSel').innerHTML=S.projects.map(x=>`<option value="${x.id}"${x.id===p.id?' selected':''}>${esc(x.name)}</option>`).join('')+'<option value="__new">+ Projekt i ri</option>';
+  const ex=p.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const tot=ex.reduce((s,e)=>s+e.amount,0);
+  $('total').textContent=eur(tot);
+  $('heroLabel').textContent='Shpenzuar gjithsej · '+p.name;
+  const thisM=today().slice(0,7);
+  const mTot=ex.filter(e=>e.date.startsWith(thisM)).reduce((s,e)=>s+e.amount,0);
+  $('heroSub').textContent=ex.length+(ex.length===1?' shpenzim':' shpenzime')+' · këtë muaj '+eur(mTot);
+  $('sampleNote').hidden=!ex.some(e=>e.sample);
+  if(p.budget>0){
+    $('budgetBox').hidden=false;
+    const pct=tot/p.budget*100;
+    $('budgetBar').classList.toggle('over',pct>100);
+    $('budgetBar').firstElementChild.style.width=Math.min(100,pct)+'%';
+    $('budgetUsed').textContent=Math.round(pct)+'% e buxhetit ('+eur0(p.budget)+')';
+    $('budgetLeft').textContent=tot<=p.budget?'Mbeten '+eur0(p.budget-tot):'Tejkaluar me '+eur0(tot-p.budget);
+  } else $('budgetBox').hidden=true;
+
+  // chips
+  const used=CATS.filter(c=>ex.some(e=>e.cat===c.id));
+  $('filterChips').innerHTML=`<button class="chip" type="button" data-f="all" aria-pressed="${filter==='all'}">Të gjitha</button>`+
+    used.map(c=>`<button class="chip" type="button" data-f="${c.id}" aria-pressed="${filter===c.id}">${c.n}</button>`).join('');
+  // list
+  const shown=ex.filter(e=>filter==='all'||e.cat===filter);
+  if(!shown.length){$('months').innerHTML=`<div class="empty">Ende asnjë shpenzim.<br>Shtyp <b>+</b> për të shtuar të parin.</div>`}
+  else{
+    const groups={};shown.forEach(e=>{(groups[e.date.slice(0,7)]=groups[e.date.slice(0,7)]||[]).push(e)});
+    $('months').innerHTML=Object.keys(groups).sort().reverse().map(k=>{
+      const g=groups[k],[y,m]=k.split('-');
+      return `<div class="month"><div class="month-h"><span>${MONTHS[+m-1]} ${y}</span><span class="num">${eur(g.reduce((s,e)=>s+e.amount,0))}</span></div>
+      <div class="list">${g.map(e=>{const c=CATS.find(c=>c.id===e.cat)||CATS[7];
+        return `<button class="row" type="button" data-id="${e.id}"><span class="dot" style="background:var(${c.c})"></span>
+        <div><div class="t">${esc(e.note||c.n)}</div><div class="m">${fmtDate(e.date)} · ${c.n}${e.shop?' · '+esc(e.shop):''}</div></div>
+        <span class="a num">${eur(e.amount)}</span></button>`}).join('')}</div></div>`}).join('');
+  }
+  // summary
+  const byC=CATS.map(c=>({c,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const maxC=byC.length?byC[0].v:1;
+  $('byCat').innerHTML=byC.length?byC.map(x=>`<div class="cat-row"><span>${x.c.n}<span class="pct num">${Math.round(x.v/tot*100)}%</span></span><span class="num" style="font-weight:600">${eur(x.v)}</span>
+    <div class="bar"><i style="width:${x.v/maxC*100}%;background:var(${x.c.c})"></i></div></div>`).join(''):'<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';
+  renderMonths(ex);
+  // settings
+  $('projName').value=p.name;$('projBudget').value=p.budget||'';
+  // views
+  ['list','summary','settings'].forEach(v=>{$('view'+v[0].toUpperCase()+v.slice(1)).hidden=S.view!==v});
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===S.view));
+}
+
+function renderMonths(ex){
+  const keys=[...new Set(ex.map(e=>e.date.slice(0,7)))].sort().slice(-6);
+  if(!keys.length){$('byMonth').innerHTML='<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';return}
+  const vals=keys.map(k=>ex.filter(e=>e.date.startsWith(k)).reduce((s,e)=>s+e.amount,0));
+  const W=320,H=170,top=22,bottom=24,bw=Math.min(40,(W-20)/keys.length-14),max=Math.max(...vals);
+  const step=(W-20)/keys.length;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Shpenzimet sipas muajit">`;
+  svg+=`<line x1="0" x2="${W}" y1="${H-bottom}" y2="${H-bottom}" stroke="var(--line)"/>`;
+  keys.forEach((k,i)=>{
+    const h=(vals[i]/max)*(H-top-bottom),x=10+step*i+(step-bw)/2,y=H-bottom-h;
+    const last=i===keys.length-1;
+    svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="5" fill="var(--accent)" opacity="${last?1:.45}"/>`;
+    svg+=`<text class="v" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${vals[i]>=1000?(vals[i]/1000).toFixed(1).replace('.',',')+'k':Math.round(vals[i])}</text>`;
+    svg+=`<text x="${x+bw/2}" y="${H-7}" text-anchor="middle">${MSHORT[+k.slice(5)-1]}</text>`;
+  });
+  $('byMonth').innerHTML=svg+'</svg>';
+}
+
+function openForm(e){
+  editing=e||null;
+  $('formTitle').textContent=e?'Ndrysho shpenzimin':'Shpenzim i ri';
+  $('fAmount').value=e?String(e.amount).replace('.',','):'';
+  $('fNote').value=e?e.note:'';$('fShop').value=e?e.shop:'';
+  $('fDate').value=e?e.date:today();
+  fCat=e?e.cat:(filter!=='all'?filter:fCat);
+  renderCats();
+  $('fErr').hidden=true;$('fDelete').hidden=!e;$('fConfirm').hidden=true;
+  $('scrim').hidden=false;
+  if(!e)setTimeout(()=>$('fAmount').focus(),50);
+}
+function renderCats(){
+  $('fCats').innerHTML=CATS.map(c=>`<button class="chip" type="button" role="radio" data-c="${c.id}" aria-checked="${fCat===c.id}" aria-pressed="${fCat===c.id}">${c.n}</button>`).join('');
+}
+const closeForm=()=>{$('scrim').hidden=true;editing=null};
+
+$('form').addEventListener('submit',ev=>{
+  ev.preventDefault();
+  const raw=$('fAmount').value.trim().replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
+  const amt=parseFloat(raw);
+  if(!(amt>0)){$('fErr').textContent='Shkruaj shumën, p.sh. 125,50.';$('fErr').hidden=false;return}
+  if(!$('fDate').value){$('fErr').textContent='Zgjidh datën.';$('fErr').hidden=false;return}
+  const data={amount:Math.round(amt*100)/100,date:$('fDate').value,cat:fCat,note:$('fNote').value.trim(),shop:$('fShop').value.trim()};
+  const p=proj();
+  if(editing){Object.assign(editing,data);delete editing.sample;toast('U ruajt')}
+  else{p.expenses.push({id:uid(),...data});toast('U shtua '+eur(data.amount))}
+  save();closeForm();render();
+});
+$('fCats').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){fCat=b.dataset.c;renderCats()}});
+$('closeForm').onclick=closeForm;
+$('scrim').addEventListener('click',e=>{if(e.target===$('scrim'))closeForm()});
+$('fDelete').onclick=()=>{$('fConfirm').hidden=false;$('fDelete').hidden=true};
+$('fDelNo').onclick=()=>{$('fConfirm').hidden=true;$('fDelete').hidden=false};
+$('fDelYes').onclick=()=>{const p=proj();p.expenses=p.expenses.filter(x=>x!==editing);save();closeForm();render();toast('U fshi')};
+$('addBtn').onclick=()=>openForm();
+$('months').addEventListener('click',e=>{const r=e.target.closest('.row');if(r)openForm(proj().expenses.find(x=>x.id===r.dataset.id))});
+$('filterChips').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;render()}});
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{S.view=t.dataset.view;save();render();window.scrollTo(0,0)});
+$('clearSample').onclick=()=>{S.projects.forEach(p=>p.expenses=p.expenses.filter(e=>!e.sample));save();render();toast('Shembujt u fshinë')};
+function newProject(){
+  const n=S.projects.length+1;
+  const p={id:uid(),name:n===2?'Shpenzime ditore':'Projekt '+n,budget:0,expenses:[]};
+  S.projects.push(p);S.current=p.id;S.view='settings';filter='all';save();render();
+  setTimeout(()=>{$('projName').focus();$('projName').select()},50);toast('Projekti u krijua');
+}
+$('projSel').onchange=e=>{if(e.target.value==='__new')newProject();else{S.current=e.target.value;filter='all';save();render()}};
+$('newProj').onclick=newProject;
+$('saveProj').onclick=()=>{const p=proj();p.name=$('projName').value.trim()||p.name;p.budget=parseFloat(String($('projBudget').value).replace(',','.'))||0;save();render();toast('Projekti u ruajt')};
+function download(name,text,type){
+  const blob=new Blob(['﻿'+text],{type});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+$('exportBtn').onclick=()=>{
+  const p=proj();const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const lines=['Data;Shuma (€);Kategoria;Përshkrimi;Dyqani/Punëtori'].concat(p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
+    [e.date,e.amount.toFixed(2).replace('.',','),q((CATS.find(c=>c.id===e.cat)||CATS[7]).n),q(e.note),q(e.shop)].join(';')));
+  download('Financat-'+p.name.replace(/[^\wëçËÇ-]+/g,'_')+'-'+today()+'.csv',lines.join('\r\n'),'text/csv;charset=utf-8');
+};
+$('backupBtn').onclick=()=>{download('Financat-kopje-'+today()+'.json',JSON.stringify(S,null,1),'application/json');S.lastBackup=today();save()};
+let pending=null;
+$('restoreIn').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(String(r.result).replace(/^﻿/,''));if(!Array.isArray(d.projects))throw 0;
+    pending=d;const n=d.projects.reduce((s,p)=>s+p.expenses.length,0);
+    $('restoreMsg').textContent='Skedari ka '+d.projects.length+' projekt(e) dhe '+n+' shpenzime. Të dhënat aktuale do të zëvendësohen.';
+    $('restoreBox').hidden=false}catch(x){toast('Ky skedar nuk është kopje e Financat')}
+    e.target.value=''};
+  r.readAsText(f);
+};
+$('restoreYes').onclick=()=>{if(pending){S=pending;pending=null;save();$('restoreBox').hidden=true;render();toast('Të dhënat u rikthyen')}};
+$('restoreNo').onclick=()=>{pending=null;$('restoreBox').hidden=true};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+})();
+</script>
+
+</body>
+</html>
