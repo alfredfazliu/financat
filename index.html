@@ -226,6 +226,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <div class="budget" id="budgetBox" hidden>
       <div class="bar" id="budgetBar"><i></i></div>
       <div class="budget-row num"><span id="budgetUsed"></span><span id="budgetLeft"></span></div>
+      <div class="sub" id="heroEta" hidden></div>
     </div>
   </section>
 
@@ -244,10 +245,16 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
       <div class="card">
         <h2>Projekti</h2>
         <div class="field"><label for="projName">Emri</label><input id="projName" type="text"></div>
-        <div class="field"><label for="projBudget">Buxheti (opsional)</label><input id="projBudget" type="number" inputmode="decimal" placeholder="p.sh. 25000"></div>
+        <div class="field"><label for="projBudget" id="projBudgetLbl">Buxheti (opsional)</label><input id="projBudget" type="number" inputmode="decimal" placeholder="p.sh. 25000"></div>
+        <div class="field" id="projKestBox" hidden><label for="projKest">Kësti mujor (opsional)</label><input id="projKest" type="number" inputmode="decimal" placeholder="p.sh. 1500"></div>
         <button class="btn" id="saveProj" type="button">Ruaj projektin</button>
       </div>
-      <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>P.sh. "Shpenzime ditore" ose "Makina"</small></button>
+      <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>Për shpenzime ose për një investim me këste</small></button>
+      <div class="card" id="typeChooser" hidden>
+        <h2>Çfarë lloj projekti?</h2>
+        <button class="lnk" type="button" data-type="shpenzime">Shpenzime<small>Rregullim banese, shpenzime ditore, makina. Mund të kesh buxhet.</small></button>
+        <button class="lnk" type="button" data-type="investim">Investim<small>P.sh. blerja e banesës me këste. Vendos vlerën totale dhe regjistron çdo pagesë.</small></button>
+      </div>
       <button class="lnk" id="pdfBtn" type="button">Eksporto në PDF<small>Raport me totalet dhe të gjitha shpenzimet. Në iPhone shtyp Share → Save to Files.</small></button>
       <button class="lnk" id="exportBtn" type="button">Eksporto në Excel (CSV)<small>Ruan një skedar me shpenzimet e projektit, që hapet në Excel ose Numbers</small></button>
       <button class="lnk" id="backupBtn" type="button">Ruaj kopje rezervë<small>Ruan të gjitha të dhënat dhe fotot në një skedar. Ruaje në iCloud Drive herë pas here.</small></button>
@@ -325,7 +332,21 @@ const CATS=[
   {id:'ngjyrosje',n:'Ngjyrosje',c:'--c7'},
   {id:'tjera',n:'Tjera',c:'--c8'}
 ];
+const ICATS=[
+  {id:'paradhenie',n:'Paradhënie',c:'--c1',price:true},
+  {id:'kest',n:'Këst',c:'--c3',price:true},
+  {id:'tarifa',n:'Noter / taksa',c:'--c2'},
+  {id:'tjera_inv',n:'Tjera',c:'--c8'}
+];
+const ALLC=CATS.concat(ICATS);
+const catOf=id=>ALLC.find(c=>c.id===id)||CATS[7];
+const isInv=p=>p&&p.type==='investim';
+const catsFor=p=>isInv(p)?ICATS:CATS;
 const IC={
+ paradhenie:'<path d="M15 7a4 4 0 1 1-3.9 5H3v3h3v2h3v-2h2.1A4 4 0 0 1 15 7z"/>',
+ kest:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 15h2M14 15h2"/>',
+ tarifa:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+ tjera_inv:'<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>',
  materiale:'<path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/>',
  mobilje:'<path d="M4 18v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6M4 18h16M6 18v2M18 18v2M7 10V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/>',
  pajisje:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M6 10h12M9 6.5v1M9 13v3"/>',
@@ -393,40 +414,59 @@ function render(){
   $('projSel').innerHTML=S.projects.map(x=>`<option value="${x.id}"${x.id===p.id?' selected':''}>${esc(x.name)}</option>`).join('')+'<option value="__new">+ Projekt i ri</option>';
   const ex=p.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date));
   const tot=ex.reduce((s,e)=>s+e.amount,0);
-  $('total').textContent=eur(tot);
-  $('heroLabel').textContent='Shpenzuar gjithsej · '+p.name;
+  const inv=isInv(p);
+  const paid=inv?ex.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0):tot;
+  $('total').textContent=eur(paid);
+  $('heroLabel').textContent=(inv?'Paguar deri tani · ':'Shpenzuar gjithsej · ')+p.name;
   const thisM=today().slice(0,7);
   const mTot=ex.filter(e=>e.date.startsWith(thisM)).reduce((s,e)=>s+e.amount,0);
-  $('heroSub').textContent=ex.length+(ex.length===1?' shpenzim':' shpenzime')+' · këtë muaj '+eur(mTot);
+  $('heroSub').textContent=inv
+    ? ex.length+(ex.length===1?' pagesë':' pagesa')+(tot>paid?' · noter / taksa '+eur(tot-paid):'')
+    : ex.length+(ex.length===1?' shpenzim':' shpenzime')+' · këtë muaj '+eur(mTot);
+  $('heroEta').hidden=true;
   $('sampleNote').hidden=!ex.some(e=>e.sample);
   if(p.budget>0){
     $('budgetBox').hidden=false;
-    const pct=tot/p.budget*100;
-    $('budgetBar').classList.toggle('over',pct>100);
+    const pct=paid/p.budget*100;
+    $('budgetBar').classList.toggle('over',!inv&&pct>100);
     $('budgetBar').firstElementChild.style.width=Math.min(100,pct)+'%';
-    $('budgetUsed').textContent=Math.round(pct)+'% e buxhetit ('+eur0(p.budget)+')';
-    $('budgetLeft').textContent=tot<=p.budget?'Mbeten '+eur0(p.budget-tot):'Tejkaluar me '+eur0(tot-p.budget);
+    if(inv){
+      $('budgetUsed').textContent=Math.round(pct)+'% e paguar nga '+eur0(p.budget);
+      $('budgetLeft').textContent=paid<p.budget?'Mbeten '+eur0(p.budget-paid):'E paguar plotësisht';
+      const left=p.budget-paid;
+      if(left>0){
+        // Monthly pace: the set installment, else the average of the last 3 months with payments.
+        let pace=p.kest||0;
+        if(!pace){const byM={};ex.filter(e=>catOf(e.cat).price).forEach(e=>{const k=e.date.slice(0,7);byM[k]=(byM[k]||0)+e.amount});
+          const last=Object.keys(byM).sort().slice(-3);if(last.length)pace=last.reduce((s,k)=>s+byM[k],0)/last.length}
+        if(pace>0){const n=Math.ceil(left/pace),d=new Date();d.setMonth(d.getMonth()+n);
+          $('heroEta').textContent='Me '+eur0(pace)+' në muaj, përfundon rreth '+MONTHS[d.getMonth()]+' '+d.getFullYear()+' ('+n+(n===1?' muaj':' muaj')+')';$('heroEta').hidden=false}
+      }
+    }else{
+      $('budgetUsed').textContent=Math.round(pct)+'% e buxhetit ('+eur0(p.budget)+')';
+      $('budgetLeft').textContent=tot<=p.budget?'Mbeten '+eur0(p.budget-tot):'Tejkaluar me '+eur0(tot-p.budget);
+    }
   } else $('budgetBox').hidden=true;
 
   // chips
-  const used=CATS.filter(c=>ex.some(e=>e.cat===c.id));
+  const used=catsFor(p).filter(c=>ex.some(e=>e.cat===c.id));
   $('filterChips').innerHTML=`<button class="chip" type="button" data-f="all" aria-pressed="${filter==='all'}">Të gjitha</button>`+
     used.map(c=>`<button class="chip" type="button" data-f="${c.id}" aria-pressed="${filter===c.id}">${c.n}</button>`).join('');
   // list
   const shown=ex.filter(e=>filter==='all'||e.cat===filter);
-  if(!shown.length){$('months').innerHTML=`<div class="empty">Ende asnjë shpenzim.<br>Shtyp <b>+</b> për të shtuar të parin.</div>`}
+  if(!shown.length){$('months').innerHTML=`<div class="empty">${inv?'Ende asnjë pagesë.':'Ende asnjë shpenzim.'}<br>Shtyp <b>+</b> për të shtuar të parin.</div>`}
   else{
     const groups={};shown.forEach(e=>{(groups[e.date.slice(0,7)]=groups[e.date.slice(0,7)]||[]).push(e)});
     $('months').innerHTML=Object.keys(groups).sort().reverse().map(k=>{
       const g=groups[k],[y,m]=k.split('-');
       return `<div class="month"><div class="month-h"><span>${MONTHS[+m-1]} ${y}</span><span class="num">${eur(g.reduce((s,e)=>s+e.amount,0))}</span></div>
-      <div class="list">${g.map(e=>{const c=CATS.find(c=>c.id===e.cat)||CATS[7];
+      <div class="list">${g.map(e=>{const c=catOf(e.cat);
         return `<div class="swipe"><div class="swipe-bg" aria-hidden="true">Fshi</div><button class="row" type="button" data-id="${e.id}">${icon(c.id,c.c)}
         <div><div class="t">${esc(e.note||c.n)}</div><div class="m">${fmtDate(e.date)} · ${c.n}${e.shop?' · '+esc(e.shop):''}${e.hasPhoto?'<svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-label="Ka foto"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>':''}</div></div>
         <span class="a num">${eur(e.amount)}</span></button></div>`}).join('')}</div></div>`}).join('');
   }
   // summary
-  const byC=CATS.map(c=>({c,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const byC=catsFor(p).map(c=>({c,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   const maxC=byC.length?byC[0].v:1;
   $('byCat').innerHTML=byC.length?byC.map(x=>`<div class="cat-row"><span>${x.c.n}<span class="pct num">${Math.round(x.v/tot*100)}%</span></span><span class="num" style="font-weight:600">${eur(x.v)}</span>
     <div class="bar"><i style="width:${x.v/maxC*100}%;background:var(${x.c.c})"></i></div></div>`).join(''):'<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';
@@ -441,6 +481,8 @@ function render(){
   renderMonths(ex);
   // settings
   $('projName').value=p.name;$('projBudget').value=p.budget||'';
+  $('projBudgetLbl').textContent=inv?'Vlera totale (€)':'Buxheti (opsional)';$('projBudget').placeholder=inv?'p.sh. 123000':'p.sh. 25000';
+  $('projKestBox').hidden=!inv;$('projKest').value=p.kest||'';
   // views
   ['list','summary','settings'].forEach(v=>{$('view'+v[0].toUpperCase()+v.slice(1)).hidden=S.view!==v});
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===S.view));
@@ -466,7 +508,7 @@ function renderMonths(ex){
   $('byMonth').innerHTML=svg+'</svg>';
 }
 
-const catOrder=()=>{const r=(S.recentCats||[]).filter(id=>CATS.some(c=>c.id===id));return r.map(id=>CATS.find(c=>c.id===id)).concat(CATS.filter(c=>!r.includes(c.id)))};
+const catOrder=()=>{const C=catsFor(proj()),r=(S.recentCats||[]).filter(id=>C.some(c=>c.id===id));return r.map(id=>C.find(c=>c.id===id)).concat(C.filter(c=>!r.includes(c.id)))};
 function showAmt(){
   const o=$('fAmount');if(!amt){o.textContent='0';o.classList.add('zero');return}
   const [i,d]=amt.split(',');o.textContent=(i||'0').replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(d!==undefined?','+d:'');o.classList.remove('zero');
@@ -484,11 +526,14 @@ function setThumb(blob){
 }
 function openForm(e){
   editing=e||null;photoChange=null;
-  $('formTitle').textContent=e?'Ndrysho shpenzimin':'Shpenzim i ri';
+  const inv=isInv(proj());$('formTitle').textContent=inv?(e?'Ndrysho pagesën':'Pagesë e re'):(e?'Ndrysho shpenzimin':'Shpenzim i ri');
+  $('fDelete').textContent=inv?'Fshije pagesën':'Fshije shpenzimin';
+  document.querySelector('label[for=fShop]').textContent=inv?'Paguar te':'Dyqani / Punëtori';
+  $('fNote').placeholder=inv?'Përshkrimi, p.sh. Kësti i tetorit':'Përshkrimi, p.sh. Pllaka për banjën';
   amt=e?String(e.amount.toFixed(2)).replace('.',',').replace(/,00$/,''):'';showAmt();
   $('fNote').value=e?e.note:'';$('fShop').value=e?e.shop:'';
   $('fDate').value=e?e.date:today();
-  fCat=e?e.cat:(filter!=='all'?filter:((S.recentCats||[])[0]||'materiale'));
+  fCat=e?e.cat:(filter!=='all'?filter:catOrder()[0].id);
   renderCats();$('fCats').scrollLeft=0;
   $('fErr').hidden=true;$('fDelete').hidden=!e;
   setThumb(null);if(e&&e.hasPhoto)DB.get(e.id).then(b=>{if(editing===e&&photoChange===null)setThumb(b)}).catch(()=>{});
@@ -578,15 +623,18 @@ addEventListener('resize',placeLens);
   bar.addEventListener('touchend',end);bar.addEventListener('touchcancel',end);
 })();
 $('clearSample').onclick=()=>{S.projects.forEach(p=>p.expenses=p.expenses.filter(e=>!e.sample));save();render();toast('Shembujt u fshinë')};
-function newProject(){
+function newProject(type){
   const n=S.projects.length+1;
-  const p={id:uid(),name:n===2?'Shpenzime ditore':'Projekt '+n,budget:0,expenses:[]};
+  const p={id:uid(),type,name:type==='investim'?'Blerja e banesës':(n===2?'Shpenzime ditore':'Projekt '+n),budget:0,expenses:[]};
+  $('typeChooser').hidden=true;
   S.projects.push(p);S.current=p.id;S.view='settings';filter='all';save();render();
-  setTimeout(()=>{$('projName').focus();$('projName').select()},50);toast('Projekti u krijua');
+  setTimeout(()=>{if(type==='investim')$('projBudget').focus();else{$('projName').focus();$('projName').select()}},50);toast(type==='investim'?'Shkruaj vlerën totale dhe ruaje':'Projekti u krijua');
 }
-$('projSel').onchange=e=>{if(e.target.value==='__new')newProject();else{S.current=e.target.value;filter='all';save();render()}};
-$('newProj').onclick=newProject;
-$('saveProj').onclick=()=>{const p=proj();p.name=$('projName').value.trim()||p.name;p.budget=parseFloat(String($('projBudget').value).replace(',','.'))||0;save();render();toast('Projekti u ruajt')};
+const askType=()=>{S.view='settings';render();$('typeChooser').hidden=false;$('typeChooser').scrollIntoView({block:'center'})};
+$('projSel').onchange=e=>{if(e.target.value==='__new')askType();else{S.current=e.target.value;filter='all';save();render()}};
+$('newProj').onclick=askType;
+$('typeChooser').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b)newProject(b.dataset.type)});
+$('saveProj').onclick=()=>{const p=proj();p.name=$('projName').value.trim()||p.name;p.budget=parseFloat(String($('projBudget').value).replace(',','.'))||0;if(isInv(p))p.kest=parseFloat(String($('projKest').value).replace(',','.'))||0;save();render();toast('Projekti u ruajt')};
 function download(name,text,type){
   const blob=new Blob(['﻿'+text],{type});const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
@@ -595,16 +643,18 @@ function download(name,text,type){
 $('pdfBtn').onclick=()=>{
   const p=proj();const ex=p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date));
   const tot=ex.reduce((s,e)=>s+e.amount,0);
-  const cn=id=>(CATS.find(c=>c.id===id)||CATS[7]).n;
+  const cn=id=>catOf(id).n;
   const dfull=s=>{const [y,m,d]=s.split('-');return +d+' '+MONTHS[+m-1]+' '+y};
-  const byC=CATS.map(c=>({n:c.n,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0),k:ex.filter(e=>e.cat===c.id).length})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const byC=catsFor(p).map(c=>({n:c.n,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0),k:ex.filter(e=>e.cat===c.id).length})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   const kpi=(l,v)=>`<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
-  let h=`<h1>Raport i shpenzimeve · ${esc(p.name)}</h1><p class="meta">Krijuar më ${dfull(today())}${ex.length?' · periudha '+dfull(ex[0].date)+' – '+dfull(ex[ex.length-1].date):''}</p>`;
-  h+='<div class="kpis">'+kpi('Shpenzuar gjithsej',eur(tot))+kpi('Numri i shpenzimeve',ex.length)+(p.budget>0?kpi(tot<=p.budget?'Mbeten nga buxheti':'Tejkaluar buxheti',eur(Math.abs(p.budget-tot))+' <small style="font-weight:400;color:#555">nga '+eur0(p.budget)+'</small>'):'')+'</div>';
+  const inv=isInv(p),paid=ex.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0);
+  let h=`<h1>${inv?'Raport i pagesave':'Raport i shpenzimeve'} · ${esc(p.name)}</h1><p class="meta">Krijuar më ${dfull(today())}${ex.length?' · periudha '+dfull(ex[0].date)+' – '+dfull(ex[ex.length-1].date):''}</p>`;
+  if(inv)h+='<div class="kpis">'+kpi('Paguar',eur(paid))+kpi('Vlera totale',p.budget>0?eur0(p.budget):'–')+kpi('Mbeten',p.budget>0?eur(Math.max(0,p.budget-paid)):'–')+'</div>';
+  else h+='<div class="kpis">'+kpi('Shpenzuar gjithsej',eur(tot))+kpi('Numri i shpenzimeve',ex.length)+(p.budget>0?kpi(tot<=p.budget?'Mbeten nga buxheti':'Tejkaluar buxheti',eur(Math.abs(p.budget-tot))+' <small style="font-weight:400;color:#555">nga '+eur0(p.budget)+'</small>'):'')+'</div>';
   h+='<h2>Sipas kategorisë</h2><table><thead><tr><th>Kategoria</th><th class="r">Shpenzime</th><th class="r">%</th><th class="r">Shuma</th></tr></thead><tbody>'+
     byC.map(x=>`<tr><td>${x.n}</td><td class="r">${x.k}</td><td class="r">${tot?Math.round(x.v/tot*100):0}%</td><td class="r">${eur(x.v)}</td></tr>`).join('')+
     `</tbody><tfoot><tr><td>Gjithsej</td><td class="r">${ex.length}</td><td class="r">100%</td><td class="r">${eur(tot)}</td></tr></tfoot></table>`;
-  h+='<h2>Të gjitha shpenzimet</h2><table><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Dyqani / Punëtori</th><th class="r">Shuma</th></tr></thead><tbody>';
+  h+='<h2>'+(inv?'Të gjitha pagesat':'Të gjitha shpenzimet')+'</h2>'+'<table><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Dyqani / Punëtori</th><th class="r">Shuma</th></tr></thead><tbody>';
   let cur='';
   ex.forEach(e=>{const k=e.date.slice(0,7);
     if(k!==cur){cur=k;const mt=ex.filter(x=>x.date.startsWith(k)).reduce((s,x)=>s+x.amount,0);const [y,m]=k.split('-');
@@ -618,7 +668,7 @@ $('pdfBtn').onclick=()=>{
 $('exportBtn').onclick=()=>{
   const p=proj();const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
   const lines=['Data;Shuma (€);Kategoria;Përshkrimi;Dyqani/Punëtori'].concat(p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
-    [e.date,e.amount.toFixed(2).replace('.',','),q((CATS.find(c=>c.id===e.cat)||CATS[7]).n),q(e.note),q(e.shop)].join(';')));
+    [e.date,e.amount.toFixed(2).replace('.',','),q(catOf(e.cat).n),q(e.note),q(e.shop)].join(';')));
   download('Financat-'+p.name.replace(/[^\wëçËÇ-]+/g,'_')+'-'+today()+'.csv',lines.join('\r\n'),'text/csv;charset=utf-8');
 };
 $('backupBtn').onclick=async()=>{
