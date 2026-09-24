@@ -83,8 +83,11 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .month{display:flex;flex-direction:column;gap:2px}
 .month-h{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px 6px;font-size:13px;color:var(--muted);font-weight:600;text-transform:capitalize}
 .list{background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow:hidden}
-.row{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:12px 14px;border-top:1px solid var(--line)}
-.row:first-child{border-top:0}
+.swipe{position:relative;overflow:hidden;border-top:1px solid var(--line)}
+.swipe:first-child{border-top:0}
+.swipe-bg{position:absolute;inset:0;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:flex-end;padding-right:22px;font-weight:600;font-size:14px}
+.row{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:var(--surface);padding:12px 14px;position:relative;transition:transform .22s ease;touch-action:pan-y}
+.row .clip{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-left:4px}
 .dot{width:38px;height:38px;border-radius:11px;display:grid;place-items:center}
 .dot svg{width:20px;height:20px}
 .row:active{background:var(--field)}
@@ -124,12 +127,29 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .fab svg{width:26px;height:26px}
 
 .scrim{position:fixed;inset:0;background:rgba(10,14,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
-.sheet{background:var(--surface);border-top:1px solid var(--line);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
+.sheet{touch-action:pan-y;background:var(--surface);border-top:1px solid var(--line);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
 .sheet-h{display:flex;justify-content:space-between;align-items:center}
 .sheet-h h3{margin:0;font-family:var(--display);font-size:19px}
 .x{border:0;background:transparent;color:var(--muted);font-weight:600;padding:6px}
 .amount-in{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--line);padding-bottom:4px}
-.amount-in input{-webkit-appearance:none;appearance:none;padding:0;border:0;background:transparent;font-family:var(--display);font-size:40px;font-weight:700;width:100%;outline:none;min-width:0}
+.amt{font-family:var(--display);font-size:42px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amt.zero{color:var(--muted)}
+.cats-scroll{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px;scrollbar-width:none}
+.cats-scroll::-webkit-scrollbar{display:none}
+.cats-scroll .chip{flex:none}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pad button{height:50px;border:0;border-radius:10px;background:var(--field);font-size:24px;font-weight:500;font-family:var(--display);display:grid;place-items:center;-webkit-user-select:none;user-select:none}
+.pad button:active{background:var(--line)}
+.pad svg{width:26px;height:26px}
+.photo{display:flex;align-items:center;gap:12px}
+.photo label{display:flex;align-items:center;gap:8px;color:var(--accent);font-weight:600;font-size:15px;padding:6px 0;cursor:pointer}
+.photo label svg{width:22px;height:22px}
+.photo img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.photo .x{margin-left:auto}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+.viewer img{max-width:100%;max-height:100%;border-radius:8px}
+.toast{display:flex;align-items:center;gap:14px}
+.toast button{border:0;background:transparent;color:var(--accent);font-weight:700;font-size:14px;padding:0}
 .amount-in span{font-family:var(--display);font-size:28px;color:var(--muted)}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
@@ -221,7 +241,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
       <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>P.sh. "Shpenzime ditore" ose "Makina"</small></button>
       <button class="lnk" id="pdfBtn" type="button">Eksporto në PDF<small>Raport me totalet dhe të gjitha shpenzimet. Në iPhone shtyp Share → Save to Files.</small></button>
       <button class="lnk" id="exportBtn" type="button">Eksporto në Excel (CSV)<small>Ruan një skedar me shpenzimet e projektit, që hapet në Excel ose Numbers</small></button>
-      <button class="lnk" id="backupBtn" type="button">Ruaj kopje rezervë<small>Ruan të gjitha të dhënat në një skedar. Ruaje në iCloud Drive herë pas here.</small></button>
+      <button class="lnk" id="backupBtn" type="button">Ruaj kopje rezervë<small>Ruan të gjitha të dhënat dhe fotot në një skedar. Ruaje në iCloud Drive herë pas here.</small></button>
       <label class="lnk" for="restoreIn" style="cursor:pointer">Rikthe nga kopja rezervë<small>Zëvendëson të dhënat në telefon me ato të skedarit</small></label>
       <input type="file" id="restoreIn" accept=".json,application/json" hidden>
       <div id="restoreBox" class="confirm" hidden>
@@ -251,25 +271,35 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
 
 <div class="scrim" id="scrim" hidden>
   <form class="sheet" id="form" novalidate>
-    <div class="grab"></div>
-    <div class="sheet-h"><h3 id="formTitle">Shpenzim i ri</h3><button class="x" type="button" id="closeForm">Anulo</button></div>
-    <div class="amount-in"><input id="fAmount" type="text" inputmode="decimal" placeholder="0,00" aria-label="Shuma" autocomplete="off"><span>€</span></div>
-    <div class="field"><label for="fNote">Përshkrimi</label><input id="fNote" type="text" placeholder="p.sh. Pllaka për banjën" autocomplete="off"></div>
-    <div class="field"><label>Kategoria</label><div class="cats" id="fCats" role="radiogroup" aria-label="Kategoria"></div></div>
+    <div class="grab" id="grab"></div>
+    <div class="sheet-h" id="sheetHead"><h3 id="formTitle">Shpenzim i ri</h3><button class="x" type="button" id="closeForm">Anulo</button></div>
+    <div class="amount-in"><output class="amt num zero" id="fAmount" aria-label="Shuma">0</output><span>€</span></div>
+    <div class="cats cats-scroll" id="fCats" role="radiogroup" aria-label="Kategoria"></div>
+    <div class="pad" id="pad" aria-label="Tastiera e numrave">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k=",">,</button><button type="button" data-k="0">0</button>
+      <button type="button" data-k="del" aria-label="Fshi shifrën"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM17 9l-6 6M11 9l6 6"/></svg></button>
+    </div>
+    <div class="field"><input id="fNote" type="text" placeholder="Përshkrimi, p.sh. Pllaka për banjën" aria-label="Përshkrimi" autocomplete="off"></div>
     <div class="two">
       <div class="field"><label for="fDate">Data</label><input id="fDate" type="date"></div>
       <div class="field"><label for="fShop">Dyqani / Punëtori</label><input id="fShop" type="text" placeholder="opsional" autocomplete="off"></div>
     </div>
+    <div class="photo">
+      <label for="fPhoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span id="fPhotoLbl">Shto foto të faturës</span></label>
+      <input type="file" id="fPhoto" accept="image/*" hidden>
+      <img id="fThumb" alt="Fatura" hidden>
+      <button class="x" type="button" id="fPhotoDel" hidden>Hiqe</button>
+    </div>
     <p class="err" id="fErr" hidden></p>
     <button class="btn" type="submit" id="fSave">Ruaj</button>
     <button class="btn ghost" type="button" id="fDelete" hidden>Fshije shpenzimin</button>
-    <div class="confirm" id="fConfirm" hidden>
-      <p>Ta fshij këtë shpenzim? Nuk mund të kthehet mbrapsht.</p>
-      <div class="two"><button class="btn danger" type="button" id="fDelYes">Po, fshije</button><button class="btn ghost" style="color:var(--ink)" type="button" id="fDelNo">Jo</button></div>
-    </div>
   </form>
 </div>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button type="button" id="toastAct" hidden>Kthe mbrapsht</button></div>
+<div class="viewer" id="viewer" hidden><img id="viewerImg" alt="Fatura"></div>
 <div class="report" id="report" aria-hidden="true"></div>
 
 <script>
@@ -311,9 +341,42 @@ try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!Array.isArray(S.projects)||!S.projects.length)S={projects:[{id:'banesa',name:'Banesa',budget:0,expenses:[]}],current:'banesa',view:'list'};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const proj=()=>S.projects.find(p=>p.id===S.current)||S.projects[0];
-let filter='all', editing=null, fCat='materiale';
+let filter='all', editing=null, fCat='materiale', amt='', photoChange=null, thumbURL=null;
 
-function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,1800)}
+let toastAction=null;
+function toast(msg,action){
+  const t=$('toast');$('toastMsg').textContent=msg;toastAction=action||null;$('toastAct').hidden=!action;t.hidden=false;
+  clearTimeout(toast.t);toast.t=setTimeout(()=>{t.hidden=true;toastAction=null},action?5000:1800);
+}
+$('toastAct').onclick=()=>{const a=toastAction;toastAction=null;$('toast').hidden=true;if(a)a()};
+
+// Receipt photos live in IndexedDB (localStorage is too small for images).
+const DB=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('financat',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('photos');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const tx=(mode,fn)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('photos',mode);const q=fn(t.objectStore('photos'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)}));
+  return{get:id=>tx('readonly',s=>s.get(id)),put:(id,b)=>tx('readwrite',s=>s.put(b,id)),del:id=>tx('readwrite',s=>s.delete(id))};
+})();
+function shrink(file){
+  return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();
+    img.onload=()=>{const m=1600,k=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement('canvas');
+      c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(),'image/jpeg',.75)};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url});
+}
+const blobToData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+const dataToBlob=d=>fetch(d).then(r=>r.blob());
+
+// Delete with undo instead of a confirmation step.
+let pendingDelete=null;
+function finalizeDelete(){if(pendingDelete){const e=pendingDelete.e;pendingDelete=null;if(e.hasPhoto)DB.del(e.id).catch(()=>{})}}
+function removeExpense(e){
+  finalizeDelete();
+  const p=proj(),i=p.expenses.indexOf(e);if(i<0)return;
+  p.expenses.splice(i,1);save();render();
+  pendingDelete={e};const mine=pendingDelete;
+  toast('U fshi '+eur(e.amount),()=>{if(pendingDelete===mine){pendingDelete=null;p.expenses.splice(Math.min(i,p.expenses.length),0,e);save();render()}});
+  setTimeout(()=>{if(pendingDelete===mine)finalizeDelete()},5200);
+}
 
 function render(){
   const p=proj();
@@ -348,9 +411,9 @@ function render(){
       const g=groups[k],[y,m]=k.split('-');
       return `<div class="month"><div class="month-h"><span>${MONTHS[+m-1]} ${y}</span><span class="num">${eur(g.reduce((s,e)=>s+e.amount,0))}</span></div>
       <div class="list">${g.map(e=>{const c=CATS.find(c=>c.id===e.cat)||CATS[7];
-        return `<button class="row" type="button" data-id="${e.id}">${icon(c.id,c.c)}
-        <div><div class="t">${esc(e.note||c.n)}</div><div class="m">${fmtDate(e.date)} · ${c.n}${e.shop?' · '+esc(e.shop):''}</div></div>
-        <span class="a num">${eur(e.amount)}</span></button>`}).join('')}</div></div>`}).join('');
+        return `<div class="swipe"><div class="swipe-bg" aria-hidden="true">Fshi</div><button class="row" type="button" data-id="${e.id}">${icon(c.id,c.c)}
+        <div><div class="t">${esc(e.note||c.n)}</div><div class="m">${fmtDate(e.date)} · ${c.n}${e.shop?' · '+esc(e.shop):''}${e.hasPhoto?'<svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-label="Ka foto"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>':''}</div></div>
+        <span class="a num">${eur(e.amount)}</span></button></div>`}).join('')}</div></div>`}).join('');
   }
   // summary
   const byC=CATS.map(c=>({c,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
@@ -392,41 +455,93 @@ function renderMonths(ex){
   $('byMonth').innerHTML=svg+'</svg>';
 }
 
+const catOrder=()=>{const r=(S.recentCats||[]).filter(id=>CATS.some(c=>c.id===id));return r.map(id=>CATS.find(c=>c.id===id)).concat(CATS.filter(c=>!r.includes(c.id)))};
+function showAmt(){
+  const o=$('fAmount');if(!amt){o.textContent='0';o.classList.add('zero');return}
+  const [i,d]=amt.split(',');o.textContent=(i||'0').replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(d!==undefined?','+d:'');o.classList.remove('zero');
+}
+function key(k){
+  if(k==='del')amt=amt.slice(0,-1);
+  else if(k===','){if(!amt.includes(','))amt=(amt||'0')+','}
+  else{const [i,d]=amt.split(',');if(d!==undefined){if(d.length<2)amt+=k}else if(i.length<9)amt=(amt==='0'?'':amt)+k}
+  $('fErr').hidden=true;showAmt();
+}
+function setThumb(blob){
+  if(thumbURL){URL.revokeObjectURL(thumbURL);thumbURL=null}
+  const has=!!blob;$('fThumb').hidden=!has;$('fPhotoDel').hidden=!has;$('fPhotoLbl').textContent=has?'Ndrysho foton':'Shto foto të faturës';
+  if(has){thumbURL=URL.createObjectURL(blob);$('fThumb').src=thumbURL}
+}
 function openForm(e){
-  editing=e||null;
+  editing=e||null;photoChange=null;
   $('formTitle').textContent=e?'Ndrysho shpenzimin':'Shpenzim i ri';
-  $('fAmount').value=e?String(e.amount).replace('.',','):'';
+  amt=e?String(e.amount.toFixed(2)).replace('.',',').replace(/,00$/,''):'';showAmt();
   $('fNote').value=e?e.note:'';$('fShop').value=e?e.shop:'';
   $('fDate').value=e?e.date:today();
-  fCat=e?e.cat:(filter!=='all'?filter:fCat);
-  renderCats();
-  $('fErr').hidden=true;$('fDelete').hidden=!e;$('fConfirm').hidden=true;
-  $('scrim').hidden=false;
-  if(!e)setTimeout(()=>$('fAmount').focus(),50);
+  fCat=e?e.cat:(filter!=='all'?filter:((S.recentCats||[])[0]||'materiale'));
+  renderCats();$('fCats').scrollLeft=0;
+  $('fErr').hidden=true;$('fDelete').hidden=!e;
+  setThumb(null);if(e&&e.hasPhoto)DB.get(e.id).then(b=>{if(editing===e&&photoChange===null)setThumb(b)}).catch(()=>{});
+  $('form').style.transform='';$('scrim').hidden=false;
 }
 function renderCats(){
-  $('fCats').innerHTML=CATS.map(c=>`<button class="chip" type="button" role="radio" data-c="${c.id}" aria-checked="${fCat===c.id}" aria-pressed="${fCat===c.id}">${c.n}</button>`).join('');
+  $('fCats').innerHTML=catOrder().map(c=>`<button class="chip" type="button" role="radio" data-c="${c.id}" aria-checked="${fCat===c.id}" aria-pressed="${fCat===c.id}">${c.n}</button>`).join('');
 }
-const closeForm=()=>{$('scrim').hidden=true;editing=null};
+const closeForm=()=>{$('scrim').hidden=true;editing=null;setThumb(null)};
 
 $('form').addEventListener('submit',ev=>{
   ev.preventDefault();
-  const raw=$('fAmount').value.trim().replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
-  const amt=parseFloat(raw);
-  if(!(amt>0)){$('fErr').textContent='Shkruaj shumën, p.sh. 125,50.';$('fErr').hidden=false;return}
+  const a=parseFloat(amt.replace(',','.'));
+  if(!(a>0)){$('fErr').textContent='Shkruaj shumën me tastierën, p.sh. 125,50.';$('fErr').hidden=false;return}
   if(!$('fDate').value){$('fErr').textContent='Zgjidh datën.';$('fErr').hidden=false;return}
-  const data={amount:Math.round(amt*100)/100,date:$('fDate').value,cat:fCat,note:$('fNote').value.trim(),shop:$('fShop').value.trim()};
-  const p=proj();
-  if(editing){Object.assign(editing,data);delete editing.sample;toast('U ruajt')}
-  else{p.expenses.push({id:uid(),...data});toast('U shtua '+eur(data.amount))}
+  const data={amount:Math.round(a*100)/100,date:$('fDate').value,cat:fCat,note:$('fNote').value.trim(),shop:$('fShop').value.trim()};
+  const p=proj();let e=editing;
+  if(e){Object.assign(e,data);delete e.sample;toast('U ruajt')}
+  else{e={id:uid(),...data};p.expenses.push(e);toast('U shtua '+eur(data.amount))}
+  if(photoChange==='remove'){e.hasPhoto=false;DB.del(e.id).catch(()=>{})}
+  else if(photoChange){e.hasPhoto=true;DB.put(e.id,photoChange).catch(()=>{e.hasPhoto=false;save();render();toast('Fotoja nuk u ruajt')})}
+  S.recentCats=[fCat].concat((S.recentCats||[]).filter(x=>x!==fCat)).slice(0,8);
   save();closeForm();render();
 });
+$('pad').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(b)key(b.dataset.k)});
+document.addEventListener('keydown',e=>{
+  if($('scrim').hidden||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  if(/^[0-9]$/.test(e.key))key(e.key);else if(e.key===','||e.key==='.')key(',');else if(e.key==='Backspace')key('del');
+  else if(e.key==='Escape')closeForm();else if(e.key==='Enter')$('form').requestSubmit();else return;
+  e.preventDefault();
+});
 $('fCats').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){fCat=b.dataset.c;renderCats()}});
+$('fPhoto').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  shrink(f).then(b=>{photoChange=b;setThumb(b)}).catch(()=>toast('Kjo foto nuk mund të hapet'))};
+$('fPhotoDel').onclick=()=>{photoChange='remove';setThumb(null)};
+$('fThumb').onclick=()=>{$('viewerImg').src=$('fThumb').src;$('viewer').hidden=false};
+$('viewer').onclick=()=>{$('viewer').hidden=true};
 $('closeForm').onclick=closeForm;
 $('scrim').addEventListener('click',e=>{if(e.target===$('scrim'))closeForm()});
-$('fDelete').onclick=()=>{$('fConfirm').hidden=false;$('fDelete').hidden=true};
-$('fDelNo').onclick=()=>{$('fConfirm').hidden=true;$('fDelete').hidden=false};
-$('fDelYes').onclick=()=>{const p=proj();p.expenses=p.expenses.filter(x=>x!==editing);save();closeForm();render();toast('U fshi')};
+$('fDelete').onclick=()=>{const e=editing;closeForm();removeExpense(e)};
+
+// Drag the sheet down to close it.
+(function(){
+  const sh=$('form');let y0=null,dy=0;
+  const start=e=>{if(!e.target.closest('#grab,#sheetHead')||e.target.closest('button'))return;y0=e.touches[0].clientY;dy=0;sh.style.transition='none'};
+  sh.addEventListener('touchstart',start,{passive:true});
+  sh.addEventListener('touchmove',e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform=`translateY(${dy}px)`;e.preventDefault()},{passive:false});
+  sh.addEventListener('touchend',()=>{if(y0===null)return;y0=null;sh.style.transition='transform .2s ease';
+    if(dy>110){sh.style.transform='translateY(100%)';setTimeout(()=>{closeForm();sh.style.transform='';sh.style.transition=''},180)}else sh.style.transform=''});
+})();
+
+// Swipe a row left to delete it.
+(function(){
+  const box=$('months');let row=null,x0=0,y0=0,dx=0,mode=null,justSwiped=false;
+  box.addEventListener('touchstart',e=>{row=e.target.closest('.row');if(!row)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;mode=null},{passive:true});
+  box.addEventListener('touchmove',e=>{if(!row)return;const t=e.touches[0],mx=t.clientX-x0,my=t.clientY-y0;
+    if(!mode){if(Math.abs(mx)>10&&Math.abs(mx)>Math.abs(my))mode='x';else if(Math.abs(my)>10){mode='y';row=null;return}else return}
+    dx=Math.min(0,mx);row.style.transition='none';row.style.transform=`translateX(${dx}px)`;e.preventDefault()},{passive:false});
+  box.addEventListener('touchend',()=>{if(!row||mode!=='x'){row=null;return}const r=row;row=null;justSwiped=true;setTimeout(()=>justSwiped=false,350);
+    r.style.transition='';
+    if(-dx>r.offsetWidth*.35){r.style.transform='translateX(-100%)';const ex=proj().expenses.find(x=>x.id===r.dataset.id);setTimeout(()=>ex&&removeExpense(ex),200)}
+    else r.style.transform=''});
+  box.addEventListener('click',e=>{if(justSwiped){e.stopImmediatePropagation();e.preventDefault()}},true);
+})();
 $('addBtn').onclick=()=>openForm();
 $('months').addEventListener('click',e=>{const r=e.target.closest('.row');if(r)openForm(proj().expenses.find(x=>x.id===r.dataset.id))});
 $('filterChips').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;render()}});
@@ -475,7 +590,11 @@ $('exportBtn').onclick=()=>{
     [e.date,e.amount.toFixed(2).replace('.',','),q((CATS.find(c=>c.id===e.cat)||CATS[7]).n),q(e.note),q(e.shop)].join(';')));
   download('Financat-'+p.name.replace(/[^\wëçËÇ-]+/g,'_')+'-'+today()+'.csv',lines.join('\r\n'),'text/csv;charset=utf-8');
 };
-$('backupBtn').onclick=()=>{download('Financat-kopje-'+today()+'.json',JSON.stringify(S,null,1),'application/json');S.lastBackup=today();save()};
+$('backupBtn').onclick=async()=>{
+  const out=JSON.parse(JSON.stringify(S));out.photos={};
+  for(const p of S.projects)for(const e of p.expenses)if(e.hasPhoto){try{const b=await DB.get(e.id);if(b)out.photos[e.id]=await blobToData(b)}catch(x){}}
+  download('Financat-kopje-'+today()+'.json',JSON.stringify(out),'application/json');S.lastBackup=today();save();
+};
 let pending=null;
 $('restoreIn').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
@@ -486,7 +605,9 @@ $('restoreIn').onchange=e=>{
     e.target.value=''};
   r.readAsText(f);
 };
-$('restoreYes').onclick=()=>{if(pending){S=pending;pending=null;save();$('restoreBox').hidden=true;render();toast('Të dhënat u rikthyen')}};
+$('restoreYes').onclick=async()=>{if(!pending)return;const d=pending;pending=null;const ph=d.photos||{};delete d.photos;
+  for(const id in ph){try{await DB.put(id,await dataToBlob(ph[id]))}catch(x){}}
+  S=d;save();$('restoreBox').hidden=true;render();toast('Të dhënat u rikthyen')};
 $('restoreNo').onclick=()=>{pending=null;$('restoreBox').hidden=true};
 // Some iOS versions draw a home-screen app under the status bar but report a 0 safe-area inset.
 (function(){
