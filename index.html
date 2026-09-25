@@ -263,6 +263,11 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
         <div class="field"><label for="projBudget" id="projBudgetLbl">Buxheti (opsional)</label><input id="projBudget" type="number" inputmode="decimal" placeholder="p.sh. 25000"></div>
         <div class="field" id="projKestBox" hidden><label for="projKest">Kësti mujor (opsional)</label><input id="projKest" type="number" inputmode="decimal" placeholder="p.sh. 1500"></div>
         <button class="btn" id="saveProj" type="button">Ruaj projektin</button>
+        <button class="btn ghost" id="delProj" type="button">Fshije projektin</button>
+        <div class="confirm" id="delProjBox" hidden>
+          <p id="delProjMsg"></p>
+          <div class="two"><button class="btn danger" type="button" id="delProjYes">Po, fshije</button><button class="btn ghost" style="color:var(--ink)" type="button" id="delProjNo">Jo</button></div>
+        </div>
       </div>
       <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>Për shpenzime ose për një investim me këste</small></button>
       <div class="card" id="typeChooser" hidden>
@@ -672,6 +677,16 @@ function newProject(type){
 }
 const askType=()=>{S.view='settings';render();$('typeChooser').hidden=false;$('typeChooser').scrollIntoView({block:'center'})};
 $('projSel').onchange=e=>{if(e.target.value==='__new')askType();else{S.current=e.target.value;filter='all';save();render()}};
+$('delProj').onclick=()=>{const p=proj(),n=p.expenses.length;
+  $('delProjMsg').textContent='Ta fshij projektin "'+p.name+'"'+(n?' me '+n+(n===1?' shpenzim':' shpenzime/pagesa')+' brenda':'')+'? Nuk kthehet mbrapsht, përveç nga një kopje rezervë.';
+  $('delProjBox').hidden=false;$('delProj').hidden=true};
+$('delProjNo').onclick=()=>{$('delProjBox').hidden=true;$('delProj').hidden=false};
+$('delProjYes').onclick=()=>{const p=proj();
+  p.expenses.forEach(e=>{if(e.hasPhoto)DB.del(e.id).catch(()=>{})});
+  S.projects=S.projects.filter(x=>x!==p);
+  if(!S.projects.length)S.projects.push({id:uid(),name:'Projekti im',budget:0,expenses:[]});
+  S.current=S.projects[0].id;filter='all';S.view='projects';save();
+  $('delProjBox').hidden=true;$('delProj').hidden=false;render();window.scrollTo(0,0);toast('Projekti "'+p.name+'" u fshi')};
 $('newProj').onclick=askType;$('newProj2').onclick=askType;
 $('projList').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;S.current=b.dataset.p;filter='all';S.view='list';save();render();window.scrollTo(0,0)});
 $('typeChooser').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b)newProject(b.dataset.type)});
