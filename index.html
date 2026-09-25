@@ -238,6 +238,15 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
 .onb p{margin:0;color:var(--muted);font-size:15px}
 .onb .lnk[aria-pressed="true"]{border-color:var(--ink);border-width:2px}
 .topcover{position:fixed;top:0;left:0;right:0;height:max(env(safe-area-inset-top,0px),var(--sat,0px));background:var(--bg);z-index:9;pointer-events:none}
+.planrow{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding-block:9px;border-top:1px solid var(--line);font-size:14px}
+.planrow:first-child{border-top:0}
+.planrow b{font-size:16px}
+.planrow small{grid-column:1/-1;color:var(--muted);font-size:12.5px}
+.planrow.now{background:var(--accent-soft);margin-inline:-10px;padding-inline:10px;border-radius:8px;border-top-color:transparent}
+.field input#planM{-webkit-appearance:auto;appearance:auto;height:30px;line-height:normal;padding:0;border:0;background:none}
+.planres{background:var(--field);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.planres b{font-family:var(--display);font-size:24px}
+.planres span{color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -276,6 +285,13 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   </main>
 
   <main id="viewSummary" hidden>
+    <div class="card" id="planCard" style="margin-bottom:16px" hidden>
+      <h2>Plani i pagesave</h2>
+      <p class="sub" id="planLeft" style="margin:-6px 0 0"></p>
+      <div id="planRows"></div>
+      <div class="field"><label for="planM" id="planMLbl">Zgjidh vetë: 24 muaj</label><input id="planM" type="range" min="3" max="120" step="1" value="24" style="height:auto;padding:0;border:0;background:none;accent-color:var(--accent)"></div>
+      <div class="planres" id="planRes"></div>
+    </div>
     <div class="card" style="margin-bottom:16px"><h2>Këtë muaj</h2><div class="stats" id="stats"></div><div class="delta" id="delta"></div></div>
     <div class="card" id="shopsCard" style="margin-bottom:16px"><h2 id="shopsTitle">Më shumë te</h2><div id="shops"></div></div>
     <div class="card"><h2>Sipas kategorisë</h2><div class="donut" id="donut"></div><div id="byCat" style="display:flex;flex-direction:column;gap:12px"></div></div>
@@ -534,7 +550,7 @@ function render(){
         if(!pace){const byM={};ex.filter(e=>catOf(e.cat).price).forEach(e=>{const k=e.date.slice(0,7);byM[k]=(byM[k]||0)+e.amount});
           const last=Object.keys(byM).sort().slice(-3);if(last.length)pace=last.reduce((s,k)=>s+byM[k],0)/last.length}
         if(pace>0){const n=Math.ceil(left/pace),d=new Date();d.setMonth(d.getMonth()+n);
-          $('heroEta').textContent='Me '+eur0(pace)+' në muaj, përfundon rreth '+MONTHS[d.getMonth()]+' '+d.getFullYear()+' ('+n+(n===1?' muaj':' muaj')+')';$('heroEta').hidden=false}
+          $('heroEta').textContent='Me '+eur0(pace)+' në muaj, përfundon rreth '+MONTHS[d.getMonth()]+' '+d.getFullYear()+' ('+n+(n===1?' muaj':' muaj')+') · Plani ›';$('heroEta').hidden=false}
       }
     }else{
       $('budgetUsed').textContent=Math.round(pct)+'% e buxhetit ('+eur0(p.budget)+')';
@@ -574,6 +590,7 @@ function render(){
   } else $('donut').hidden=true;
   renderMonths(ex);
   renderStats(p,ex);
+  renderPlan(p,ex);
   renderCatList();
   // settings
   $('projName').value=p.name;$('projBudget').value=p.budget||'';
@@ -617,6 +634,34 @@ function renderBackupNote(){
   else{const d=daysSince(S.lastBackup);if(d>=7)msg='Kopja e fundit rezervë është bërë para '+d+' ditësh. Bëj një të re.'}
   $('bkNote').hidden=!msg||snoozed||S.view==='settings';if(msg)$('bkMsg').textContent=msg;
 }
+function planInfo(p,ex){
+  const paid=ex.filter(e=>catOf(e.cat,p).price).reduce((s,e)=>s+e.amount,0),left=p.budget-paid;
+  let pace=p.kest||0;
+  if(!pace){const byM={};ex.filter(e=>catOf(e.cat,p).price).forEach(e=>{const k=e.date.slice(0,7);byM[k]=(byM[k]||0)+e.amount});
+    const last=Object.keys(byM).sort().slice(-3);if(last.length)pace=last.reduce((s,k)=>s+byM[k],0)/last.length}
+  return{left,pace};
+}
+const endMonth=n=>{const d=new Date();d.setMonth(d.getMonth()+n);return MONTHS[d.getMonth()]+' '+d.getFullYear()};
+function renderPlan(p,ex){
+  const card=$('planCard');
+  if(!isInv(p)||!(p.budget>0)){card.hidden=true;return}
+  const {left,pace}=planInfo(p,ex);
+  if(left<=0){card.hidden=true;return}
+  card.hidden=false;
+  $('planLeft').textContent='Mbeten '+eur0(left)+(pace>0?' · tani paguan rreth '+eur0(pace)+' në muaj ('+Math.ceil(left/pace)+' muaj)':'');
+  const opts=[[12,'1 vit'],[24,'2 vjet'],[36,'3 vjet'],[60,'5 vjet']];
+  $('planRows').innerHTML=opts.map(([m,l])=>{const need=left/m,extra=need-pace;
+    return `<div class="planrow${pace>0&&Math.abs(Math.ceil(left/pace)-m)<=3?' now':''}"><span>Për ${l}</span><b class="num">${eur0(Math.ceil(need))} / muaj</b>
+      <small>Përfundon ${endMonth(m)}${pace>0?(extra>0?' · '+eur0(Math.ceil(extra))+' më shumë se tani':' · '+eur0(Math.ceil(-extra))+' më pak se tani'):''}</small></div>`}).join('');
+  planCustom(left,pace);
+}
+function planCustom(left,pace){
+  const m=+$('planM').value,need=Math.ceil(left/m),y=Math.floor(m/12),r=m%12;
+  $('planMLbl').textContent='Zgjidh vetë: '+m+' muaj'+(y?' ('+(y+' vit'+(y>1?'e':''))+(r?' e '+r+' muaj':'')+')':'');
+  $('planRes').innerHTML=`<b class="num">${eur0(need)} / muaj</b><span>Përfundon ${endMonth(m)}${pace>0?' · '+(need>pace?eur0(need-pace)+' më shumë':eur0(pace-need)+' më pak')+' se tani':''}</span>`;
+}
+$('heroEta').onclick=()=>{if(isInv(proj()))setView('summary')};
+$('planM').addEventListener('input',()=>{const p=proj();const ex=p.expenses;const {left,pace}=planInfo(p,ex);planCustom(left,pace)});
 function renderStats(p,ex){
   const inv=isInv(p),now=today().slice(0,7),d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);
   const prev=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
