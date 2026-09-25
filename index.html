@@ -87,6 +87,9 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .swipe:first-child{border-top:0}
 .swipe-bg{position:absolute;inset:0;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:flex-end;padding-right:22px;font-weight:600;font-size:14px}
 .row{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:var(--surface);padding:12px 14px;position:relative;transition:transform .22s ease;touch-action:pan-y}
+.prow{border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.cur{font-size:11px;font-weight:600;color:var(--accent);border:1px solid currentColor;border-radius:99px;padding:0 6px;margin-left:6px;vertical-align:2px}
 .row .clip{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-left:4px}
 .dot{width:38px;height:38px;border-radius:11px;display:grid;place-items:center}
 .dot svg{width:20px;height:20px}
@@ -125,7 +128,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .tab,.fab{position:relative;z-index:1}
 .tab{transition:transform .2s ease}
 .tabbar-in.dragging .tab[aria-selected="true"]{transform:scale(1.08)}
-.tab{border:0;background:transparent;padding:8px;font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab{border:0;background:transparent;padding:8px 4px;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
 .tab svg{width:22px;height:22px}
 .tab{color:var(--muted)}
 .tab[aria-selected="true"]{color:var(--ink)}
@@ -219,7 +222,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <button id="clearSample" type="button">Fshiji</button>
   </div>
 
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="eyebrow" id="heroLabel">Shpenzuar gjithsej</div>
     <div class="total num" id="total">0 €</div>
     <div class="sub num" id="heroSub"></div>
@@ -238,6 +241,18 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   <main id="viewSummary" hidden>
     <div class="card"><h2>Sipas kategorisë</h2><div class="donut" id="donut"></div><div id="byCat" style="display:flex;flex-direction:column;gap:12px"></div></div>
     <div class="card months" style="margin-top:16px"><h2>Sipas muajit</h2><div id="byMonth"></div></div>
+  </main>
+
+  <main id="viewProjects" hidden>
+    <div class="settings">
+      <div class="hero" style="border:0;margin:0;padding:0">
+        <div class="eyebrow">Gjithsej në të gjitha projektet</div>
+        <div class="total num" id="allTotal">0 €</div>
+        <div class="sub num" id="allSub"></div>
+      </div>
+      <div class="list" id="projList"></div>
+      <button class="lnk" id="newProj2" type="button">+ Projekt i ri<small>Për shpenzime ose për një investim me këste</small></button>
+    </div>
   </main>
 
   <main id="viewSettings" hidden>
@@ -280,6 +295,8 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <button class="fab" id="addBtn" type="button" aria-label="Shto shpenzim">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
     <div style="display:flex;justify-content:space-around">
+      <button class="tab" role="tab" data-view="projects" aria-selected="false" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Projektet</button>
       <button class="tab" role="tab" data-view="settings" aria-selected="false" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Cilësimet</button>
     </div>
@@ -484,11 +501,34 @@ function render(){
   $('projBudgetLbl').textContent=inv?'Vlera totale (€)':'Buxheti (opsional)';$('projBudget').placeholder=inv?'p.sh. 123000':'p.sh. 25000';
   $('projKestBox').hidden=!inv;$('projKest').value=p.kest||'';
   // views
-  ['list','summary','settings'].forEach(v=>{$('view'+v[0].toUpperCase()+v.slice(1)).hidden=S.view!==v});
+  ['list','summary','projects','settings'].forEach(v=>{$('view'+v[0].toUpperCase()+v.slice(1)).hidden=S.view!==v});
+  $('hero').hidden=S.view==='projects';
+  if(S.view==='projects')renderProjects();
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===S.view));
   placeLens();
 }
 
+function projStats(p){
+  const tot=p.expenses.reduce((s,e)=>s+e.amount,0);
+  const paid=isInv(p)?p.expenses.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0):tot;
+  return{tot,paid,n:p.expenses.length};
+}
+function renderProjects(){
+  let all=0;
+  $('projList').innerHTML=S.projects.map(p=>{
+    const st=projStats(p),inv=isInv(p);all+=st.tot;
+    const pct=p.budget>0?Math.min(100,st.paid/p.budget*100):null;
+    const line=inv
+      ? (p.budget>0?`Paguar ${Math.round(st.paid/p.budget*100)}% · mbeten ${eur0(Math.max(0,p.budget-st.paid))}`:`${st.n} pagesa`)
+      : (p.budget>0?`${Math.round(st.tot/p.budget*100)}% e buxhetit · ${st.n} shpenzime`:`${st.n} shpenzime`);
+    return `<button class="row prow" type="button" data-p="${p.id}">
+      <span class="dot" style="background:color-mix(in srgb,var(${inv?'--c3':'--c1'}) 16%,transparent);color:var(${inv?'--c3':'--c1'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inv?IC.paradhenie:IC.materiale}</svg></span>
+      <div><div class="t">${esc(p.name)}${p.id===S.current?' <span class="cur">aktiv</span>':''}</div><div class="m">${inv?'Investim':'Shpenzime'} · ${line}</div>
+      ${pct!==null?`<div class="bar" style="height:4px;margin-top:6px"><i style="width:${pct}%"></i></div>`:''}</div>
+      <span class="a num">${eur0(inv?st.paid:st.tot)}</span></button>`}).join('');
+  $('allTotal').textContent=eur(all);
+  $('allSub').textContent=S.projects.length+(S.projects.length===1?' projekt':' projekte')+' · përfshin pagesat, shpenzimet dhe taksat';
+}
 function renderMonths(ex){
   const keys=[...new Set(ex.map(e=>e.date.slice(0,7)))].sort().slice(-6);
   if(!keys.length){$('byMonth').innerHTML='<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';return}
@@ -632,7 +672,8 @@ function newProject(type){
 }
 const askType=()=>{S.view='settings';render();$('typeChooser').hidden=false;$('typeChooser').scrollIntoView({block:'center'})};
 $('projSel').onchange=e=>{if(e.target.value==='__new')askType();else{S.current=e.target.value;filter='all';save();render()}};
-$('newProj').onclick=askType;
+$('newProj').onclick=askType;$('newProj2').onclick=askType;
+$('projList').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;S.current=b.dataset.p;filter='all';S.view='list';save();render();window.scrollTo(0,0)});
 $('typeChooser').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b)newProject(b.dataset.type)});
 $('saveProj').onclick=()=>{const p=proj();p.name=$('projName').value.trim()||p.name;p.budget=parseFloat(String($('projBudget').value).replace(',','.'))||0;if(isInv(p))p.kest=parseFloat(String($('projKest').value).replace(',','.'))||0;save();render();toast('Projekti u ruajt')};
 function download(name,text,type){
