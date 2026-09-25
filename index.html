@@ -19,7 +19,7 @@
   --bg:#FFFFFF; --surface:#FFFFFF; --field:#FAFAFA; --ink:#000000; --muted:#737373; --line:#DBDBDB;
   --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#E0F1FE;
   --grad:linear-gradient(45deg,#FEDA75 0%,#FA7E1E 22%,#D62976 50%,#962FBF 78%,#4F5BD5 100%); --grad-btn:linear-gradient(90deg,#F58529,#DD2A7B 50%,#8134AF);
-  --danger:#B3261E; --warn:#A96A00;
+  --danger:#B3261E; --warn:#A96A00; --good:#1A7F37;
   --c1:#1E4FA0; --c2:#C0762A; --c3:#2E7D5B; --c4:#8A4FA3; --c5:#B3443B; --c6:#3A8FA8; --c7:#7A6A2E; --c8:#6B7278;
   --display:ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
   --body:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
@@ -30,7 +30,7 @@
     color-scheme:dark;
     --bg:#000000; --surface:#000000; --field:#121212; --ink:#F5F5F5; --muted:#A8A8A8; --line:#262626;
     --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#0B2A40;
-    --danger:#F08A80; --warn:#E3AE55;
+    --danger:#F08A80; --warn:#E3AE55; --good:#3FB950;
     --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
     --glass:rgba(0,0,0,.92); --shadow:none;
   }
@@ -39,7 +39,7 @@
   color-scheme:dark;
   --bg:#000000; --surface:#000000; --field:#121212; --ink:#F5F5F5; --muted:#A8A8A8; --line:#262626;
   --accent:#0095F6; --accent-ink:#FFFFFF; --accent-soft:#0B2A40;
-  --danger:#F08A80; --warn:#E3AE55;
+  --danger:#F08A80; --warn:#E3AE55; --good:#3FB950;
   --c1:#7FA6E8; --c2:#E0A060; --c3:#6CC39B; --c4:#C39BD8; --c5:#E88A80; --c6:#7CC6DA; --c7:#CDBB78; --c8:#A5ACB1;
     --glass:rgba(0,0,0,.92); --shadow:none;
 }
@@ -207,6 +207,36 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   .report tr{break-inside:avoid}
   .report .foot{margin-top:14pt;color:#777;font-size:8.5pt}
 }
+/* categories editor */
+.catrow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:10px 12px;border-top:1px solid var(--line);font-size:15px}
+.catrow:first-child{border-top:0}
+.catrow .dot{width:32px;height:32px;border-radius:9px}
+.catrow .dot svg{width:17px;height:17px}
+.catrow small{margin-left:auto;color:var(--muted);font-size:12.5px}
+.swatches,.icons{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:32px;height:32px;border-radius:50%;border:2px solid transparent}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--surface)}
+.ic{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
+.ic svg{width:20px;height:20px}
+.ic[aria-pressed="true"]{border-color:var(--ink);background:var(--field);border-width:2px}
+.check{display:flex;align-items:center;gap:10px;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+/* smarter summary */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat span{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.stat b{font-size:17px;font-family:var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.delta{font-size:13px;font-weight:600}
+.delta.up{color:var(--danger)} .delta.down{color:var(--good)}
+.shoprow{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14px;padding-block:8px;border-top:1px solid var(--line)}
+.shoprow:first-child{border-top:0}
+.shoprow small{color:var(--muted);font-size:12.5px;grid-column:1}
+/* first run */
+.onb{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.onb-in{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.onb h1{font-family:var(--display);font-size:34px;margin:24px 0 0;letter-spacing:-.02em}
+.onb p{margin:0;color:var(--muted);font-size:15px}
+.onb .lnk[aria-pressed="true"]{border-color:var(--ink);border-width:2px}
 </style>
 </head>
 <body>
@@ -216,6 +246,11 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <div class="brand">Financat</div>
     <select class="projsel" id="projSel" aria-label="Projekti"></select>
   </header>
+
+  <div id="bkNote" class="sample" hidden>
+    <span id="bkMsg"></span>
+    <span style="display:flex;gap:2px;flex:none"><button id="bkLater" type="button" style="color:var(--muted)">Më vonë</button><button id="bkNow" type="button">Ruaj tani</button></span>
+  </div>
 
   <div id="sampleNote" class="sample" hidden>
     <span>Këto janë shpenzime shembull, që të shohësh si duket aplikacioni.</span>
@@ -239,6 +274,8 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   </main>
 
   <main id="viewSummary" hidden>
+    <div class="card" style="margin-bottom:16px"><h2>Këtë muaj</h2><div class="stats" id="stats"></div><div class="delta" id="delta"></div></div>
+    <div class="card" id="shopsCard" style="margin-bottom:16px"><h2 id="shopsTitle">Më shumë te</h2><div id="shops"></div></div>
     <div class="card"><h2>Sipas kategorisë</h2><div class="donut" id="donut"></div><div id="byCat" style="display:flex;flex-direction:column;gap:12px"></div></div>
     <div class="card months" style="margin-top:16px"><h2>Sipas muajit</h2><div id="byMonth"></div></div>
   </main>
@@ -267,6 +304,20 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
         <div class="confirm" id="delProjBox" hidden>
           <p id="delProjMsg"></p>
           <div class="two"><button class="btn danger" type="button" id="delProjYes">Po, fshije</button><button class="btn ghost" style="color:var(--ink)" type="button" id="delProjNo">Jo</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Kategoritë</h2>
+        <div class="list" id="catList" style="box-shadow:none"></div>
+        <button class="lnk" id="catAdd" type="button" style="text-align:center">+ Kategori e re</button>
+        <div id="catEd" class="confirm" hidden>
+          <div class="field"><label for="catName">Emri</label><input id="catName" type="text" placeholder="p.sh. Dritare" autocomplete="off"></div>
+          <div class="field"><label>Ngjyra</label><div class="swatches" id="catColors"></div></div>
+          <div class="field"><label>Ikona</label><div class="icons" id="catIcons"></div></div>
+          <label class="check" id="catPriceBox"><input type="checkbox" id="catPrice"> Hyn te vlera totale (p.sh. kësti, paradhënia)</label>
+          <p class="err" id="catErr" hidden></p>
+          <div class="two"><button class="btn" type="button" id="catSave">Ruaj</button><button class="btn ghost" style="color:var(--ink)" type="button" id="catCancel">Anulo</button></div>
+          <button class="btn ghost" type="button" id="catDel">Fshije kategorinë</button>
         </div>
       </div>
       <button class="lnk" id="newProj" type="button">+ Projekt i ri<small>Për shpenzime ose për një investim me këste</small></button>
@@ -337,6 +388,18 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <button class="btn ghost" type="button" id="fDelete" hidden>Fshije shpenzimin</button>
   </form>
 </div>
+<div class="onb" id="onb" hidden>
+  <div class="onb-in">
+    <h1>Mirë se vjen te Financat</h1>
+    <p>Ndiq shpenzimet dhe investimet e tua. Të dhënat ruhen vetëm në këtë telefon.</p>
+    <div class="field"><label>Çfarë do të ndjekësh së pari?</label></div>
+    <button class="lnk" type="button" data-ot="shpenzime" aria-pressed="true">Shpenzime<small>Rregullim banese, shpenzime ditore, makina. Mund të vendosësh buxhet.</small></button>
+    <button class="lnk" type="button" data-ot="investim" aria-pressed="false">Investim<small>P.sh. blerja e banesës me këste: vlera totale dhe çdo pagesë.</small></button>
+    <div class="field"><label for="onbName">Emri i projektit</label><input id="onbName" type="text" placeholder="p.sh. Rregullimi i banesës" autocomplete="off"></div>
+    <div class="field"><label for="onbVal" id="onbValLbl">Buxheti (opsional)</label><input id="onbVal" type="number" inputmode="decimal" placeholder="p.sh. 25000"></div>
+    <button class="btn" type="button" id="onbGo">Fillo</button>
+  </div>
+</div>
 <div class="toast" id="toast" hidden><span id="toastMsg"></span><button type="button" id="toastAct" hidden>Kthe mbrapsht</button></div>
 <div class="viewer" id="viewer" hidden><img id="viewerImg" alt="Fatura"></div>
 <div class="report" id="report" aria-hidden="true"></div>
@@ -361,10 +424,15 @@ const ICATS=[
   {id:'tjera_inv',n:'Tjera',c:'--c8'}
 ];
 const ALLC=CATS.concat(ICATS);
-const catOf=id=>ALLC.find(c=>c.id===id)||CATS[7];
+const catsFor=p=>{if(!p.cats)p.cats=JSON.parse(JSON.stringify(p.type==='investim'?ICATS:CATS)).map(c=>({...c,icon:c.id}));return p.cats};
+const catOf=(id,p)=>{p=p||proj();return catsFor(p).find(c=>c.id===id)||ALLC.find(c=>c.id===id)||{id,n:'Tjera',c:'--c8',icon:'tjera'}};
 const isInv=p=>p&&p.type==='investim';
-const catsFor=p=>isInv(p)?ICATS:CATS;
+const COLORS=['--c1','--c2','--c3','--c4','--c5','--c6','--c7','--c8'];
 const IC={
+ makina:'<path d="M5 17h14M6 17v2M18 17v2M3 13l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6v4H3z"/><circle cx="7.5" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/>',
+ ushqim:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.2a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/>',
+ shendet:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/>',
+ argetim:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
  paradhenie:'<path d="M15 7a4 4 0 1 1-3.9 5H3v3h3v2h3v-2h2.1A4 4 0 0 1 15 7z"/>',
  kest:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 15h2M14 15h2"/>',
  tarifa:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
@@ -391,7 +459,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
-if(!S||!Array.isArray(S.projects)||!S.projects.length)S={projects:[{id:'banesa',name:'Banesa',budget:0,expenses:[]}],current:'banesa',view:'list'};
+const firstRun=!S||!Array.isArray(S.projects)||!S.projects.length;
+if(firstRun)S={projects:[{id:'banesa',name:'Banesa',budget:0,expenses:[]}],current:'banesa',view:'list',createdAt:new Date().toISOString().slice(0,10)};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const proj=()=>S.projects.find(p=>p.id===S.current)||S.projects[0];
 let filter='all', editing=null, fCat='materiale', amt='', photoChange=null, thumbURL=null;
@@ -447,6 +516,7 @@ function render(){
     : ex.length+(ex.length===1?' shpenzim':' shpenzime')+' · këtë muaj '+eur(mTot);
   $('heroEta').hidden=true;
   $('sampleNote').hidden=!ex.some(e=>e.sample);
+  renderBackupNote();
   if(p.budget>0){
     $('budgetBox').hidden=false;
     const pct=paid/p.budget*100;
@@ -483,7 +553,7 @@ function render(){
       const g=groups[k],[y,m]=k.split('-');
       return `<div class="month"><div class="month-h"><span>${MONTHS[+m-1]} ${y}</span><span class="num">${eur(g.reduce((s,e)=>s+e.amount,0))}</span></div>
       <div class="list">${g.map(e=>{const c=catOf(e.cat);
-        return `<div class="swipe"><div class="swipe-bg" aria-hidden="true">Fshi</div><button class="row" type="button" data-id="${e.id}">${icon(c.id,c.c)}
+        return `<div class="swipe"><div class="swipe-bg" aria-hidden="true">Fshi</div><button class="row" type="button" data-id="${e.id}">${icon(c.icon||c.id,c.c)}
         <div><div class="t">${esc(e.note||c.n)}</div><div class="m">${fmtDate(e.date)} · ${c.n}${e.shop?' · '+esc(e.shop):''}${e.hasPhoto?'<svg class="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-label="Ka foto"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>':''}</div></div>
         <span class="a num">${eur(e.amount)}</span></button></div>`}).join('')}</div></div>`}).join('');
   }
@@ -501,6 +571,8 @@ function render(){
     $('donut').innerHTML=d;$('donut').hidden=false;
   } else $('donut').hidden=true;
   renderMonths(ex);
+  renderStats(p,ex);
+  renderCatList();
   // settings
   $('projName').value=p.name;$('projBudget').value=p.budget||'';
   $('projBudgetLbl').textContent=inv?'Vlera totale (€)':'Buxheti (opsional)';$('projBudget').placeholder=inv?'p.sh. 123000':'p.sh. 25000';
@@ -515,7 +587,7 @@ function render(){
 
 function projStats(p){
   const tot=p.expenses.reduce((s,e)=>s+e.amount,0);
-  const paid=isInv(p)?p.expenses.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0):tot;
+  const paid=isInv(p)?p.expenses.filter(e=>catOf(e.cat,p).price).reduce((s,e)=>s+e.amount,0):tot;
   return{tot,paid,n:p.expenses.length};
 }
 function renderProjects(){
@@ -534,6 +606,79 @@ function renderProjects(){
   $('allTotal').textContent=eur(all);
   $('allSub').textContent=S.projects.length+(S.projects.length===1?' projekt':' projekte')+' · përfshin pagesat, shpenzimet dhe taksat';
 }
+const daysSince=d=>Math.floor((Date.parse(today())-Date.parse(d))/864e5);
+function renderBackupNote(){
+  const n=S.projects.reduce((s,p)=>s+p.expenses.length,0);
+  const snoozed=S.bkSnooze&&S.bkSnooze>today();
+  let msg=null;
+  if(!S.lastBackup){if(n>=3)msg='Ende s\'ke bërë kopje rezervë. Ruaje në iCloud Drive që të mos humbasin të dhënat.'}
+  else{const d=daysSince(S.lastBackup);if(d>=7)msg='Kopja e fundit rezervë është bërë para '+d+' ditësh. Bëj një të re.'}
+  $('bkNote').hidden=!msg||snoozed||S.view==='settings';if(msg)$('bkMsg').textContent=msg;
+}
+function renderStats(p,ex){
+  const inv=isInv(p),now=today().slice(0,7),d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);
+  const prev=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const sumM=k=>ex.filter(e=>e.date.startsWith(k)).reduce((s,e)=>s+e.amount,0);
+  const cur=sumM(now),last=sumM(prev);
+  let avg=0;
+  if(ex.length){const first=ex.map(e=>e.date).sort()[0].slice(0,7);const [fy,fm]=first.split('-').map(Number),[ny,nm]=now.split('-').map(Number);
+    const months=Math.max(1,(ny-fy)*12+(nm-fm)+1);avg=ex.reduce((s,e)=>s+e.amount,0)/months}
+  const st=(l,v)=>`<div class="stat"><span>${l}</span><b class="num">${v}</b></div>`;
+  $('stats').innerHTML=st(inv?'Paguar këtë muaj':'Këtë muaj',eur0(cur))+st('Muaji i kaluar',eur0(last))+st('Mesatarja mujore',eur0(avg));
+  const dl=$('delta');dl.className='delta';
+  if(last>0&&cur>0){const pc=Math.round((cur-last)/last*100);
+    if(pc===0)dl.textContent='Njësoj si muaji i kaluar.';
+    else{dl.textContent=(pc>0?'↑ ':'↓ ')+Math.abs(pc)+'% '+(pc>0?'më shumë':'më pak')+' se muaji i kaluar';if(!inv)dl.classList.add(pc>0?'up':'down')}}
+  else if(cur===0)dl.textContent=inv?'Asnjë pagesë këtë muaj ende.':'Asnjë shpenzim këtë muaj ende.';
+  else dl.textContent='';
+  const by={};ex.forEach(e=>{const k=(e.shop||'').trim();if(!k)return;const key=k.toLowerCase();(by[key]=by[key]||{n:k,v:0,c:0});by[key].v+=e.amount;by[key].c++});
+  const top=Object.values(by).sort((a,b)=>b.v-a.v).slice(0,5);
+  $('shopsCard').hidden=!top.length;$('shopsTitle').textContent=inv?'Paguar te':'Më shumë te';
+  $('shops').innerHTML=top.map(x=>`<div class="shoprow"><span>${esc(x.n)}</span><b class="num">${eur(x.v)}</b><small>${x.c} ${x.c===1?(inv?'pagesë':'shpenzim'):(inv?'pagesa':'shpenzime')}</small></div>`).join('');
+}
+// ---- categories editor
+let catEditing=null,catColor='--c1',catIcon='tjera',catDelArmed=false;
+function renderCatList(){
+  const p=proj();
+  $('catList').innerHTML=catsFor(p).map(c=>{const n=p.expenses.filter(e=>e.cat===c.id).length;
+    return `<button class="catrow" type="button" data-cid="${c.id}">${icon(c.icon||c.id,c.c)}<span>${esc(c.n)}</span><small>${n?n+' ×':''}</small></button>`}).join('');
+  $('catPriceBox').hidden=!isInv(p);
+}
+function openCat(c){
+  catEditing=c||null;catDelArmed=false;
+  $('catName').value=c?c.n:'';catColor=c?c.c:COLORS[catsFor(proj()).length%COLORS.length];catIcon=c?(c.icon||c.id):'tjera';
+  $('catPrice').checked=c?!!c.price:false;$('catErr').hidden=true;
+  $('catDel').hidden=!c;$('catDel').textContent='Fshije kategorinë';
+  renderCatPickers();$('catEd').hidden=false;$('catAdd').hidden=true;
+  if(!c)setTimeout(()=>$('catName').focus(),50);
+}
+function renderCatPickers(){
+  $('catColors').innerHTML=COLORS.map(k=>`<button class="sw" type="button" data-col="${k}" aria-label="Ngjyrë" aria-pressed="${k===catColor}" style="background:var(${k})"></button>`).join('');
+  $('catIcons').innerHTML=Object.keys(IC).filter(k=>k!=='tjera_inv').map(k=>`<button class="ic" type="button" data-icn="${k}" aria-pressed="${k===catIcon}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg></button>`).join('');
+}
+const closeCat=()=>{$('catEd').hidden=true;$('catAdd').hidden=false;catEditing=null};
+$('catList').addEventListener('click',e=>{const b=e.target.closest('[data-cid]');if(b)openCat(catsFor(proj()).find(c=>c.id===b.dataset.cid))});
+$('catAdd').onclick=()=>openCat(null);
+$('catCancel').onclick=closeCat;
+$('catColors').addEventListener('click',e=>{const b=e.target.closest('[data-col]');if(b){catColor=b.dataset.col;renderCatPickers()}});
+$('catIcons').addEventListener('click',e=>{const b=e.target.closest('[data-icn]');if(b){catIcon=b.dataset.icn;renderCatPickers()}});
+$('catSave').onclick=()=>{
+  const n=$('catName').value.trim(),C=catsFor(proj());
+  if(!n){$('catErr').textContent='Shkruaj emrin e kategorisë.';$('catErr').hidden=false;return}
+  if(C.some(c=>c!==catEditing&&c.n.toLowerCase()===n.toLowerCase())){$('catErr').textContent='Kjo kategori ekziston.';$('catErr').hidden=false;return}
+  const data={n,c:catColor,icon:catIcon,price:isInv(proj())?$('catPrice').checked:undefined};
+  if(catEditing)Object.assign(catEditing,data);else C.push({id:'k'+uid(),...data});
+  save();closeCat();render();toast('Kategoria u ruajt');
+};
+$('catDel').onclick=()=>{
+  const p=proj(),C=catsFor(p),c=catEditing;if(!c)return;
+  if(C.length<=1){$('catErr').textContent='Duhet të mbetet të paktën një kategori.';$('catErr').hidden=false;return}
+  const used=p.expenses.filter(e=>e.cat===c.id);
+  const others=C.filter(x=>x!==c),to=others.find(x=>/^tjera/i.test(x.n))||others[others.length-1];
+  if(used.length&&!catDelArmed){catDelArmed=true;$('catDel').textContent='Konfirmo: '+used.length+' kalojnë te "'+to.n+'"';return}
+  used.forEach(e=>e.cat=to.id);p.cats=others;
+  if(filter===c.id)filter='all';save();closeCat();render();toast('Kategoria u fshi');
+};
 function renderMonths(ex){
   const keys=[...new Set(ex.map(e=>e.date.slice(0,7)))].sort().slice(-6);
   if(!keys.length){$('byMonth').innerHTML='<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';return}
@@ -730,7 +875,7 @@ $('exportBtn').onclick=()=>{
 $('backupBtn').onclick=async()=>{
   const out=JSON.parse(JSON.stringify(S));out.photos={};
   for(const p of S.projects)for(const e of p.expenses)if(e.hasPhoto){try{const b=await DB.get(e.id);if(b)out.photos[e.id]=await blobToData(b)}catch(x){}}
-  download('Financat-kopje-'+today()+'.json',JSON.stringify(out),'application/json');S.lastBackup=today();save();
+  download('Financat-kopje-'+today()+'.json',JSON.stringify(out),'application/json');S.lastBackup=today();S.bkSnooze=null;save();render();
 };
 let pending=null;
 $('restoreIn').onchange=e=>{
@@ -766,6 +911,22 @@ if('serviceWorker' in navigator){
   let reloaded=false;
   if(navigator.serviceWorker.controller)navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloaded){reloaded=true;location.reload()}});
 }
+$('bkNow').onclick=()=>$('backupBtn').click();
+$('bkLater').onclick=()=>{const d=new Date();d.setDate(d.getDate()+3);S.bkSnooze=d.toISOString().slice(0,10);save();render()};
+// ---- first run
+let onbType='shpenzime';
+function onbSync(){document.querySelectorAll('#onb [data-ot]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ot===onbType));
+  const inv=onbType==='investim';$('onbValLbl').textContent=inv?'Vlera totale (€)':'Buxheti (opsional)';
+  $('onbVal').placeholder=inv?'p.sh. 123000':'p.sh. 25000';$('onbName').placeholder=inv?'p.sh. Blerja e banesës':'p.sh. Rregullimi i banesës'}
+document.querySelectorAll('#onb [data-ot]').forEach(b=>b.onclick=()=>{onbType=b.dataset.ot;onbSync()});
+$('onbGo').onclick=()=>{
+  const inv=onbType==='investim';
+  const name=$('onbName').value.trim()||(inv?'Blerja e banesës':'Rregullimi i banesës');
+  const val=parseFloat(String($('onbVal').value).replace(',','.'))||0;
+  S.projects=[{id:uid(),type:inv?'investim':undefined,name,budget:val,expenses:[]}];S.current=S.projects[0].id;S.view='list';
+  save();$('onb').hidden=true;render();toast('Gati! Shtyp + për të shtuar të parin');
+};
+if(firstRun){onbSync();$('onb').hidden=false}
 render();
 })();
 </script>
