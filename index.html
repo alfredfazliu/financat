@@ -247,6 +247,9 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
 .planres{background:var(--field);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:2px}
 .planres b{font-family:var(--display);font-size:24px}
 .planres span{color:var(--muted);font-size:13px}
+.scan{display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed var(--accent);color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px;font-weight:600;font-size:15px}
+.scan svg{width:20px;height:20px}
+.scan[disabled]{opacity:.7}
 </style>
 </head>
 <body>
@@ -381,6 +384,8 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
   <form class="sheet" id="form" novalidate>
     <div class="grab" id="grab"></div>
     <div class="sheet-h" id="sheetHead"><h3 id="formTitle">Shpenzim i ri</h3><button class="x" type="button" id="closeForm">Anulo</button></div>
+    <button class="scan" type="button" id="scanBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8h10M7 12h10M7 16h6"/></svg><span id="scanLbl">Skano faturën</span></button>
+    <input type="file" id="scanIn" accept="image/*" hidden>
     <div class="amount-in"><output class="amt num zero" id="fAmount" aria-label="Shuma">0</output><span>€</span></div>
     <div class="cats" id="fCats" role="radiogroup" aria-label="Kategoria"></div>
     <div class="pad" id="pad" aria-label="Tastiera e numrave">
@@ -756,6 +761,66 @@ function key(k){
   else{const [i,d]=amt.split(',');if(d!==undefined){if(d.length<2)amt+=k}else if(i.length<9)amt=(amt==='0'?'':amt)+k}
   $('fErr').hidden=true;showAmt();
 }
+// ---- Receipt scanning: on-device OCR (tesseract.js, self-hosted in ./ocr) + simple parsing.
+let ocrWorker=null,ocrPct=0;
+function loadScript(src){return new Promise((res,rej)=>{if(window.Tesseract)return res();const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=rej;document.head.appendChild(t)})}
+async function getOcr(){
+  if(ocrWorker)return ocrWorker;
+  await loadScript('ocr/tesseract.min.js');
+  const base=new URL('ocr/',location.href).href;
+  ocrWorker=await Tesseract.createWorker(['sqi','eng'],1,{workerPath:base+'worker.min.js',corePath:base,langPath:base+'lang',
+    logger:m=>{if(m.status==='recognizing text'){ocrPct=Math.round(m.progress*100);$('scanLbl').textContent='Po lexoj faturën… '+ocrPct+'%'}}});
+  return ocrWorker;
+}
+function parseNum(t){
+  t=t.replace(/[€\s]|EUR/gi,'');
+  if(/^\d{1,3}([.,]\d{3})*[.,]\d{2}$/.test(t)||/^\d+[.,]\d{2}$/.test(t)){const int=t.slice(0,-3).replace(/[.,]/g,'');return parseFloat(int+'.'+t.slice(-2))}
+  if(/^\d+$/.test(t))return parseFloat(t);
+  return NaN;
+}
+const MONEY=/\d{1,3}(?:[.,\s]\d{3})*[.,]\d{2}(?!\d)|\d+[.,]\d{2}(?!\d)/g;
+function parseReceipt(text){
+  const lines=text.split(/\n/).map(l=>l.trim()).filter(Boolean);
+  const out={};
+  // Total: prefer lines naming the total, else the largest money value.
+  const key=/(tot[a-z]*|gjithsej|shuma|p[eë]r\s*t[eë]\s*paguar|pagesa|amount|summe|vlera)/i;
+  let best=0;
+  lines.forEach(l=>{if(!key.test(l)||/tvsh.*%|vat.*%|zbritje|kusur|change|cash|kesh/i.test(l))return;(l.match(MONEY)||[]).forEach(m=>{const v=parseNum(m);if(v>best)best=v})});
+  if(!best)(text.match(MONEY)||[]).forEach(m=>{const v=parseNum(m);if(v>best&&v<1e6)best=v});
+  if(best)out.amount=best;
+  // Date
+  const dm=text.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4}|\d{2})(?!\d)/);
+  if(dm){let [_,d,m,y]=dm;y=y.length===2?'20'+y:y;d=+d;m=+m;
+    if(d>=1&&d<=31&&m>=1&&m<=12){const iso=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');if(iso<=today()&&iso>='2000-01-01')out.date=iso}}
+  // Shop: company-looking line, else the first line with enough letters.
+  const co=lines.find(l=>/sh\.?\s?p\.?\s?k|l\.?l\.?c|\bsh\.?a\b|\bn\.?t\.?p\b|\bb\.?i\b/i.test(l));
+  const first=lines.slice(0,6).find(l=>(l.match(/[a-zëç]/gi)||[]).length>=4&&!/fatur|kupon|receipt|nui|nrb|tel|adres|data|ora/i.test(l));
+  const shop=(co||first||'').replace(/[^\p{L}\p{N}\s.&'-]/gu,'').replace(/\s+/g,' ').trim();
+  if(shop)out.shop=shop.slice(0,40);
+  // Category guess from words on the receipt.
+  const kw=[['hidraulike',/tub|bojler|sanitar|rubinet|lavaman|wc|dush|sifon/i],['elektrike',/kabll|priz|llamb|ndri[cç]|siguress|[cç]el[eë]s|led/i],
+    ['ngjyrosje',/boj[eë]|ngjyr|glet|fasad|lyer/i],['pajisje',/frigorifer|furr|lavatri[cç]|televiz|\btv\b|klim|aspirator|mikrovalë|pjat/i],
+    ['mobilje',/mobil|karrige|tavolin|dollap|shtrat|divan|kuzhin/i],['materiale',/[cç]imento|gips|pllak|laminat|izolim|profil|r[eë]r[eë]|bllok|zam|silikon/i]];
+  const C=catsFor(proj());const hit=kw.find(([id,re])=>re.test(text)&&C.some(c=>c.id===id));if(hit)out.cat=hit[0];
+  return out;
+}
+$('scanBtn').onclick=()=>$('scanIn').click();
+$('scanIn').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const btn=$('scanBtn');btn.disabled=true;$('scanLbl').textContent='Po përgatis leximin…';
+  try{
+    const img=await shrink(f);photoChange=img;setThumb(img);
+    const w=await getOcr();const {data}=await w.recognize(img);
+    const r=parseReceipt(data.text||'');
+    if(r.amount){amt=String(r.amount.toFixed(2)).replace('.',',').replace(/,00$/,'');showAmt()}
+    if(r.date)$('fDate').value=r.date;
+    if(r.shop&&!$('fShop').value)$('fShop').value=r.shop;
+    if(r.cat){fCat=r.cat;renderCats()}
+    const got=['amount','date','shop'].filter(k=>r[k]).length;
+    toast(got?'U lexuan '+got+' nga 3. Kontrolloji para se të ruash.':'Nuk e lexova dot. Fotoja u ruajt, shkruaj shumën vetë.');
+  }catch(x){toast(navigator.onLine?'Leximi dështoi. Provo një foto më të qartë.':'Herën e parë leximi kërkon internet.')}
+  btn.disabled=false;$('scanLbl').textContent='Skano faturën';
+};
 function setThumb(blob){
   if(thumbURL){URL.revokeObjectURL(thumbURL);thumbURL=null}
   const has=!!blob;$('fThumb').hidden=!has;$('fPhotoDel').hidden=!has;$('fPhotoLbl').textContent=has?'Ndrysho foton':'Shto foto të faturës';
