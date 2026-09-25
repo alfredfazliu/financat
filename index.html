@@ -737,8 +737,11 @@ $('restoreNo').onclick=()=>{pending=null;$('restoreBox').hidden=true};
   if(!standalone)return;
   const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden';
   document.body.appendChild(probe);
-  if(probe.offsetHeight===0)document.documentElement.style.setProperty('--sat',(screen.height>=900?62:screen.height>=812?50:20)+'px');
-  probe.remove();
+  // Only pad when the page really runs full-screen under the status bar; when iOS already starts it below the bar, add nothing.
+  const fix=()=>{const under=screen.height-innerHeight<20;
+    document.documentElement.style.setProperty('--sat',under&&probe.offsetHeight===0?(screen.height>=900?62:screen.height>=812?50:20)+'px':'0px')};
+  fix();addEventListener('resize',fix);
+  return;
 })();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(reg=>{
