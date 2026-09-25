@@ -237,10 +237,12 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
 .onb h1{font-family:var(--display);font-size:34px;margin:24px 0 0;letter-spacing:-.02em}
 .onb p{margin:0;color:var(--muted);font-size:15px}
 .onb .lnk[aria-pressed="true"]{border-color:var(--ink);border-width:2px}
+.topcover{position:fixed;top:0;left:0;right:0;height:max(env(safe-area-inset-top,0px),var(--sat,0px));background:var(--bg);z-index:9;pointer-events:none}
 </style>
 </head>
 <body>
 
+<div class="topcover" aria-hidden="true"></div>
 <div class="app" id="app">
   <header class="top">
     <div class="brand">Financat</div>
@@ -375,7 +377,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <div class="field"><input id="fNote" type="text" placeholder="Përshkrimi, p.sh. Pllaka për banjën" aria-label="Përshkrimi" autocomplete="off"></div>
     <div class="two">
       <div class="field"><label for="fDate">Data</label><input id="fDate" type="date"></div>
-      <div class="field"><label for="fShop">Dyqani / Punëtori</label><input id="fShop" type="text" placeholder="opsional" autocomplete="off"></div>
+      <div class="field"><label for="fShop">Dyqani / Punëtori</label><input id="fShop" type="text" placeholder="opsional" autocomplete="off" list="shopList"><datalist id="shopList"></datalist></div>
     </div>
     <div class="photo">
       <label for="fPhoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span id="fPhotoLbl">Shto foto të faturës</span></label>
@@ -723,6 +725,9 @@ function openForm(e){
   amt=e?String(e.amount.toFixed(2)).replace('.',',').replace(/,00$/,''):'';showAmt();
   $('fNote').value=e?e.note:'';$('fShop').value=e?e.shop:'';
   $('fDate').value=e?e.date:today();
+  // Suggest names already used, so the same shop or payee is always written the same way.
+  const seen={};proj().expenses.forEach(x=>{const k=(x.shop||'').trim();if(k)seen[k.toLowerCase()]=seen[k.toLowerCase()]||k});
+  $('shopList').innerHTML=Object.values(seen).sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}"></option>`).join('');
   fCat=e?e.cat:(filter!=='all'?filter:catOrder()[0].id);
   renderCats();$('fCats').scrollLeft=0;
   $('fErr').hidden=true;$('fDelete').hidden=!e;
