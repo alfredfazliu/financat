@@ -181,6 +181,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .lnk small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
 textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:10px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:20}
+  .credit{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.3px;margin:8px 0 4px}
 @media (prefers-reduced-motion:no-preference){
   .sheet{animation:up .22s ease-out}
   @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
@@ -356,6 +357,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
         <p id="restoreMsg"></p>
         <div class="two"><button class="btn danger" type="button" id="restoreYes">Po, rikthe</button><button class="btn ghost" style="color:var(--ink)" type="button" id="restoreNo">Jo</button></div>
       </div>
+      <p class="credit">Financat · krijuar nga A.F</p>
     </div>
   </main>
 </div>
@@ -976,7 +978,7 @@ $('pdfBtn').onclick=()=>{
     if(k!==cur){cur=k;const mt=ex.filter(x=>x.date.startsWith(k)).reduce((s,x)=>s+x.amount,0);const [y,m]=k.split('-');
       h+=`<tr class="m"><td colspan="4" style="text-transform:capitalize">${MONTHS[+m-1]} ${y}</td><td class="r">${eur(mt)}</td></tr>`}
     h+=`<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${esc(e.note||'')}</td><td>${cn(e.cat)}</td><td>${esc(e.shop||'')}</td><td class="r">${eur(e.amount)}</td></tr>`});
-  h+=`</tbody><tfoot><tr><td colspan="4">Gjithsej</td><td class="r">${eur(tot)}</td></tr></tfoot></table><p class="foot">Financat</p>`;
+  h+=`</tbody><tfoot><tr><td colspan="4">Gjithsej</td><td class="r">${eur(tot)}</td></tr></tfoot></table><p class="foot">Financat · A.F</p>`;
   $('report').innerHTML=h;
   const old=document.title;document.title='Financat-'+p.name+'-'+today();
   setTimeout(()=>{window.print();setTimeout(()=>document.title=old,1000)},50);
