@@ -188,25 +188,46 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
 }
 .report{display:none}
 @media print{
-  @page{size:A4;margin:16mm 14mm}
-  html,body{background:#fff!important;color:#111!important;padding:0!important}
-  .app,.tabbar,.scrim,.toast{display:none!important}
-  .report{display:block;font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;font-size:10.5pt;color:#111}
-  .report h1{font-size:20pt;margin:0 0 2pt}
-  .report h2{font-size:12pt;margin:16pt 0 6pt;border-bottom:1.5pt solid #D62976;padding-bottom:3pt;color:#B81F66}
-  .report .meta{color:#555;margin:0 0 12pt}
-  .report .kpis{display:flex;gap:10pt}
-  .report .kpi{flex:1;border:1pt solid #d5d9e0;border-radius:6pt;padding:8pt 10pt}
-  .report .kpi b{display:block;font-size:15pt;margin-top:2pt}
-  .report .kpi span{color:#555;font-size:9pt;text-transform:uppercase;letter-spacing:.05em}
-  .report table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-  .report th{text-align:left;font-size:9pt;color:#555;text-transform:uppercase;letter-spacing:.04em;border-bottom:1pt solid #999;padding:4pt}
-  .report td{padding:4pt;border-bottom:.5pt solid #ddd;vertical-align:top}
-  .report td.r,.report th.r{text-align:right;white-space:nowrap}
-  .report tr.m td{background:#f0f3f8;font-weight:600}
-  .report tfoot td{font-weight:700;border-top:1.5pt solid #111;border-bottom:0}
-  .report tr{break-inside:avoid}
-  .report .foot{margin-top:14pt;color:#777;font-size:8.5pt}
+  @page{size:A4;margin:18mm 16mm 18mm;
+    @bottom-right{content:"Faqja " counter(page) " nga " counter(pages);font:7.5pt -apple-system,"Helvetica Neue",Arial,sans-serif;color:#8a8a8a}}
+  html,body{background:#fff!important;color:#1a1a1a!important;padding:0!important}
+  .app,.tabbar,.scrim,.toast,.topcover{display:none!important}
+  .report{display:block;font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:9pt;line-height:1.4;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .report .num,.report td.r,.report th.r{font-variant-numeric:tabular-nums}
+  .report .lh{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:8pt;border-bottom:1.25pt solid #1a1a1a}
+  .report .brand{display:flex;align-items:center;gap:7pt;font-size:12pt;font-weight:700;letter-spacing:-.01em}
+  .report .brand img{width:22pt;height:22pt;border-radius:5pt}
+  .report .lh .dt{text-align:right;font-size:8pt;color:#6b6b6b;line-height:1.35}
+  .report .lh .dt b{display:block;color:#1a1a1a;font-size:8pt;letter-spacing:.08em;text-transform:uppercase}
+  .report h1{font-size:17pt;font-weight:700;letter-spacing:-.01em;margin:16pt 0 2pt}
+  .report .meta{color:#6b6b6b;margin:0 0 14pt;font-size:9pt}
+  .report .top{display:flex;gap:24pt;align-items:flex-start;margin-bottom:6pt}
+  .report dl{flex:1;margin:0;display:grid;grid-template-columns:auto 1fr;gap:3pt 14pt;font-size:9pt}
+  .report dt{color:#6b6b6b}
+  .report dd{margin:0}
+  .report .tot{width:230pt;border-collapse:collapse}
+  .report .tot td{padding:3pt 0;border:0;font-size:9.5pt}
+  .report .tot td.r{text-align:right}
+  .report .tot tr.sum td{border-top:.75pt solid #1a1a1a;padding-top:5pt;font-weight:700;font-size:10.5pt}
+  .report .tot tr.ext td{padding-top:10pt;color:#444}
+  .report .tot tr.pct td{color:#6b6b6b;font-size:8pt;padding-top:1pt}
+  .report h2{font-size:8pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1a1a1a;margin:20pt 0 6pt}
+  .report table.t{width:100%;border-collapse:collapse}
+  .report .t th{text-align:left;font-size:7.5pt;font-weight:600;color:#6b6b6b;letter-spacing:.04em;text-transform:uppercase;padding:0 5pt 4pt;border-bottom:.75pt solid #1a1a1a}
+  .report .t td{padding:4.5pt 5pt;border-bottom:.5pt solid #e2e2e2;vertical-align:top}
+  .report .t th:first-child,.report .t td:first-child{padding-left:0}
+  .report .t th:last-child,.report .t td:last-child{padding-right:0}
+  .report .t td.r,.report .t th.r{text-align:right;white-space:nowrap}
+  .report .t td.d{white-space:nowrap;color:#444}
+  .report .t td.mu{color:#9a9a9a}
+  .report .t tr.m td{padding-top:10pt;font-weight:700;border-bottom:.5pt solid #bdbdbd}
+  .report .t tr.m td:first-child{text-transform:capitalize}
+  .report .t tfoot td{font-weight:700;font-size:9.5pt;border-top:.75pt solid #1a1a1a;border-bottom:2.25pt double #1a1a1a;padding-top:5pt}
+  .report .t tr{break-inside:avoid}
+  .report thead{display:table-header-group}
+  .report .bar{display:inline-block;vertical-align:middle;width:60pt;height:4pt;background:#ececec;margin-right:6pt;border-radius:2pt;overflow:hidden}
+  .report .bar i{display:block;height:100%;background:#1a1a1a}
+  .report .note{margin-top:18pt;color:#8a8a8a;font-size:7.5pt}
 }
 /* categories editor */
 .catrow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:10px 12px;border-top:1px solid var(--line);font-size:15px}
@@ -961,27 +982,43 @@ function download(name,text,type){
 $('pdfBtn').onclick=()=>{
   const p=proj();const ex=p.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date));
   const tot=ex.reduce((s,e)=>s+e.amount,0);
-  const cn=id=>catOf(id).n;
-  const dfull=s=>{const [y,m,d]=s.split('-');return +d+' '+MONTHS[+m-1]+' '+y};
+  const cn=id=>esc(catOf(id).n);
+  const dnum=s=>{const [y,m,d]=s.split('-');return d+'.'+m+'.'+y};
+  const n2=v=>eur(v).replace(/\s€$/,'');
   const byC=catsFor(p).map(c=>({n:c.n,v:ex.filter(e=>e.cat===c.id).reduce((s,e)=>s+e.amount,0),k:ex.filter(e=>e.cat===c.id).length})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-  const kpi=(l,v)=>`<div class="kpi"><span>${l}</span><b>${v}</b></div>`;
-  const inv=isInv(p),paid=ex.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0);
-  let h=`<h1>${inv?'Raport i pagesave':'Raport i shpenzimeve'} · ${esc(p.name)}</h1><p class="meta">Krijuar më ${dfull(today())}${ex.length?' · periudha '+dfull(ex[0].date)+' – '+dfull(ex[ex.length-1].date):''}</p>`;
-  if(inv)h+='<div class="kpis">'+kpi('Paguar',eur(paid))+kpi('Vlera totale',p.budget>0?eur0(p.budget):'–')+kpi('Mbeten',p.budget>0?eur(Math.max(0,p.budget-paid)):'–')+'</div>';
-  else h+='<div class="kpis">'+kpi('Shpenzuar gjithsej',eur(tot))+kpi('Numri i shpenzimeve',ex.length)+(p.budget>0?kpi(tot<=p.budget?'Mbeten nga buxheti':'Tejkaluar buxheti',eur(Math.abs(p.budget-tot))+' <small style="font-weight:400;color:#555">nga '+eur0(p.budget)+'</small>'):'')+'</div>';
-  h+='<h2>Sipas kategorisë</h2><table><thead><tr><th>Kategoria</th><th class="r">Shpenzime</th><th class="r">%</th><th class="r">Shuma</th></tr></thead><tbody>'+
-    byC.map(x=>`<tr><td>${x.n}</td><td class="r">${x.k}</td><td class="r">${tot?Math.round(x.v/tot*100):0}%</td><td class="r">${eur(x.v)}</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>Gjithsej</td><td class="r">${ex.length}</td><td class="r">100%</td><td class="r">${eur(tot)}</td></tr></tfoot></table>`;
-  h+='<h2>'+(inv?'Të gjitha pagesat':'Të gjitha shpenzimet')+'</h2>'+'<table><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Dyqani / Punëtori</th><th class="r">Shuma</th></tr></thead><tbody>';
+  const inv=isInv(p),paid=ex.filter(e=>catOf(e.cat).price).reduce((s,e)=>s+e.amount,0),other=tot-paid;
+  const title=inv?'Raport i pagesave':'Raport i shpenzimeve';
+  const per=ex.length?dnum(ex[0].date)+' – '+dnum(ex[ex.length-1].date):'–';
+  const row=(l,v,c)=>`<tr${c?` class="${c}"`:''}><td>${l}</td><td class="r num">${v}</td></tr>`;
+  let tt='';
+  if(inv){
+    if(p.budget>0)tt+=row('Vlera totale',eur(p.budget));
+    tt+=row('Paguar deri më tani',eur(paid));
+    if(p.budget>0){tt+=row('Mbetet për t’u paguar',eur(Math.max(0,p.budget-paid)),'sum');tt+=row(Math.min(100,Math.round(paid/p.budget*100))+'% e vlerës e paguar','','pct')}
+    if(other>0)tt+=row('Shpenzime të tjera (noter, taksa…)',eur(other),'ext');
+  }else{
+    if(p.budget>0){tt+=row('Buxheti',eur(p.budget));tt+=row('Shpenzuar',eur(tot));
+      tt+=row(tot<=p.budget?'Mbeten nga buxheti':'Tejkalim i buxhetit',eur(Math.abs(p.budget-tot)),'sum');tt+=row(Math.round(tot/p.budget*100)+'% e buxhetit e shpenzuar','','pct')}
+    else tt+=row('Shpenzuar gjithsej',eur(tot),'sum');
+  }
+  let h=`<div class="lh"><div class="brand"><img src="icons/icon-192.png" alt="">Financat</div><div class="dt"><b>${title}</b>Data e raportit: ${dnum(today())}</div></div>
+<h1>${esc(p.name)}</h1><p class="meta">${inv?'Projekt investimi':'Projekt shpenzimesh'}</p>
+<div class="top"><dl><dt>Periudha</dt><dd class="num">${per}</dd><dt>${inv?'Numri i pagesave':'Numri i shpenzimeve'}</dt><dd class="num">${ex.length}</dd>${inv&&p.kest>0?`<dt>Kësti mujor</dt><dd class="num">${eur(p.kest)}</dd>`:''}<dt>Monedha</dt><dd>Euro (€)</dd></dl><table class="tot">${tt}</table></div>`;
+  h+='<h2>1. Sipas kategorisë</h2><table class="t"><thead><tr><th>Kategoria</th><th class="r">Nr.</th><th>Pjesa</th><th class="r">Shuma (€)</th></tr></thead><tbody>'+
+    byC.map(x=>{const pc=tot?x.v/tot*100:0;return `<tr><td>${esc(x.n)}</td><td class="r">${x.k}</td><td class="num"><span class="bar"><i style="width:${pc.toFixed(1)}%"></i></span>${pc<1&&pc>0?'<1':Math.round(pc)}%</td><td class="r">${n2(x.v)}</td></tr>`}).join('')+
+    `</tbody><tfoot><tr><td>Totali</td><td class="r">${ex.length}</td><td>100%</td><td class="r">${eur(tot)}</td></tr></tfoot></table>`;
+  h+='<h2>2. '+(inv?'Lista e pagesave':'Lista e shpenzimeve')+'</h2><table class="t"><thead><tr><th>Data</th><th>Përshkrimi</th><th>Kategoria</th><th>Furnitori / Punëtori</th><th class="r">Shuma (€)</th></tr></thead><tbody>';
   let cur='';
   ex.forEach(e=>{const k=e.date.slice(0,7);
     if(k!==cur){cur=k;const mt=ex.filter(x=>x.date.startsWith(k)).reduce((s,x)=>s+x.amount,0);const [y,m]=k.split('-');
-      h+=`<tr class="m"><td colspan="4" style="text-transform:capitalize">${MONTHS[+m-1]} ${y}</td><td class="r">${eur(mt)}</td></tr>`}
-    h+=`<tr><td style="white-space:nowrap">${fmtDate(e.date)}</td><td>${esc(e.note||'')}</td><td>${cn(e.cat)}</td><td>${esc(e.shop||'')}</td><td class="r">${eur(e.amount)}</td></tr>`});
-  h+=`</tbody><tfoot><tr><td colspan="4">Gjithsej</td><td class="r">${eur(tot)}</td></tr></tfoot></table><p class="foot">Financat · A.F</p>`;
+      h+=`<tr class="m"><td colspan="4">${MONTHS[+m-1]} ${y}</td><td class="r">${n2(mt)}</td></tr>`}
+    h+=`<tr><td class="d num">${dnum(e.date)}</td><td${e.note?'':' class="mu"'}>${e.note?esc(e.note):'—'}</td><td>${cn(e.cat)}</td><td${e.shop?'':' class="mu"'}>${e.shop?esc(e.shop):'—'}</td><td class="r">${n2(e.amount)}</td></tr>`});
+  if(!ex.length)h+='<tr><td colspan="5" class="mu">Nuk ka shpenzime të regjistruara.</td></tr>';
+  h+=`</tbody><tfoot><tr><td colspan="4">Totali</td><td class="r">${eur(tot)}</td></tr></tfoot></table><p class="note">Raport i krijuar me Financat · A.F. Shumat janë në euro.</p>`;
   $('report').innerHTML=h;
-  const old=document.title;document.title='Financat-'+p.name+'-'+today();
-  setTimeout(()=>{window.print();setTimeout(()=>document.title=old,1000)},50);
+  const old=document.title;document.title=title.replace(/ /g,'-')+'-'+p.name.replace(/[^\wëçËÇ-]+/g,'-')+'-'+today();
+  const go=()=>setTimeout(()=>{window.print();setTimeout(()=>document.title=old,1000)},50);
+  const img=$('report').querySelector('img');img.complete?go():(img.onload=img.onerror=go);
 };
 $('exportBtn').onclick=()=>{
   const p=proj();const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
