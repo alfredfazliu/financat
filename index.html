@@ -62,7 +62,11 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
   background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
   background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 
-.hero{display:flex;flex-direction:column;gap:6px;padding-block:4px 8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.pdots{display:flex;gap:5px;justify-content:center;margin-top:6px}
+.pdots:empty{display:none}
+.pdots i{width:6px;height:6px;border-radius:3px;background:var(--line);transition:width .2s,background .2s}
+.pdots i.on{width:16px;background:var(--ink)}
+.hero{touch-action:pan-y;flex-direction:column;gap:6px;padding-block:4px 8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
 .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
 .total{font-family:var(--display);font-weight:800;font-size:42px;line-height:1;letter-spacing:-.02em}
 .sub{color:var(--muted);font-size:14px}
@@ -135,6 +139,9 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .pm-i .pm-t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pm-i .pm-t small{color:var(--muted);font-size:12px}
 .pm-i .pm-c{width:18px;color:var(--accent);font-weight:700}
+.qmenu{right:auto;left:calc(50% - min(145px,50vw - 12px));transform-origin:50% 100%}
+.pm-i .dot{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.pm-i .dot svg{width:16px;height:16px}
 .pm-i.new{color:var(--accent);font-weight:600;border-top:1px solid var(--line);border-radius:0 0 10px 10px;margin-top:4px}
 .tab{transition:transform .2s ease}
 .tabbar-in.dragging .tab[aria-selected="true"]{transform:scale(1.08)}
@@ -308,6 +315,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
       <div class="budget-row num"><span id="budgetUsed"></span><span id="budgetLeft"></span></div>
       <div class="sub" id="heroEta" hidden></div>
     </div>
+    <div class="pdots" id="pdots" aria-hidden="true"></div>
   </section>
 
   <main id="viewList">
@@ -408,6 +416,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     </div>
   </div>
 </nav>
+<div class="pmenu qmenu" id="qmenu" role="menu" aria-label="Shto shpejt" hidden><div class="pm-h">Shto në kategorinë</div><div id="qmList"></div></div>
 <div class="pmenu" id="pmenu" role="menu" aria-label="Ndërro projektin" hidden><div class="pm-h">Ndërro projektin</div><div id="pmList"></div></div>
 
 <div class="scrim" id="scrim" hidden>
@@ -634,6 +643,7 @@ function render(){
   // views
   ['list','summary','projects','settings'].forEach(v=>{$('view'+v[0].toUpperCase()+v.slice(1)).hidden=S.view!==v});
   $('hero').hidden=S.view==='projects';
+  $('pdots').innerHTML=S.projects.length>1?S.projects.map(x=>`<i${x.id===S.current?' class="on"':''}></i>`).join(''):'';
   if(S.view==='projects')renderProjects();
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.view===S.view));
   placeLens();
@@ -933,11 +943,11 @@ $('fDelete').onclick=()=>{const e=editing;closeForm();removeExpense(e)};
     else r.style.transform=''});
   box.addEventListener('click',e=>{if(justSwiped){e.stopImmediatePropagation();e.preventDefault()}},true);
 })();
-$('addBtn').onclick=()=>openForm();
+$('addBtn').onclick=e=>{if(!e.defaultPrevented)openForm()};
 $('months').addEventListener('click',e=>{const r=e.target.closest('.row');if(r)openForm(proj().expenses.find(x=>x.id===r.dataset.id))});
 $('filterChips').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;render()}});
-const setView=v=>{window.closeProjMenu&&closeProjMenu();if(S.view===v)return;S.view=v;save();render();window.scrollTo(0,0)};
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setView(t.dataset.view));
+const setView=v=>{window.closeProjMenu&&closeProjMenu();if(S.view===v){window.scrollTo({top:0,behavior:'smooth'});return}S.view=v;save();render();window.scrollTo(0,0)};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=e=>{if(!e.defaultPrevented)setView(t.dataset.view)});
 // Bottom bar: hold and slide a finger across it to switch pages (like Instagram on iOS).
 function tabBox(t){const a=$('tabIn').getBoundingClientRect(),r=t.getBoundingClientRect();return{l:r.left-a.left,w:r.width,c:r.left-a.left+r.width/2}}
 function placeLens(){const t=document.querySelector('.tab[aria-selected="true"]');if(!t)return;const b=tabBox(t),w=Math.max(b.w+20,76);
@@ -965,8 +975,8 @@ addEventListener('resize',placeLens);
   document.addEventListener('touchstart',e=>{if(!M.hidden&&!e.target.closest('#pmenu'))closeMenu()},{passive:true});
   document.addEventListener('mousedown',e=>{if(!M.hidden&&!e.target.closest('#pmenu')&&!e.target.closest('.tab[data-view="projects"]'))closeMenu()});
   let noClick=false;
-  document.querySelector('.tab[data-view="projects"]').addEventListener('click',e=>{if(noClick){e.stopImmediatePropagation();e.preventDefault();noClick=false}},true);
-  bar.addEventListener('touchstart',e=>{if(e.target.closest('.fab')||!e.target.closest('.tab'))return;on=true;moved=false;x0=e.touches[0].clientX;
+  document.addEventListener('click',e=>{if(noClick&&e.target.closest('.tab[data-view="projects"]')){e.stopImmediatePropagation();e.preventDefault();noClick=false}},true);
+  bar.addEventListener('touchstart',e=>{if(e.target.closest('.fab')||!e.target.closest('.tab'))return;on=true;moved=false;noClick=false;x0=e.touches[0].clientX;
     clearTimeout(holdT);if(e.target.closest('.tab[data-view="projects"]'))holdT=setTimeout(()=>{holdT=null;if(on&&!moved){noClick=true;openMenu()}},380)},{passive:true});
   bar.addEventListener('touchmove',e=>{if(!on)return;const x=e.touches[0].clientX;
     if(menuDrag){const t=e.touches[0],el=document.elementFromPoint(t.clientX,t.clientY);setHot(el&&el.closest('#pmenu .pm-i'));e.preventDefault();return}
@@ -976,6 +986,47 @@ addEventListener('resize',placeLens);
     follow(x);e.preventDefault()},{passive:false});
   const end=()=>{clearTimeout(holdT);if(!on)return;on=false;if(menuDrag){menuDrag=false;if(hot)pick(hot);return}if(moved){L.classList.remove('drag');bar.classList.remove('dragging');placeLens()}};
   bar.addEventListener('touchend',end);bar.addEventListener('touchcancel',end);
+})();
+// Swipe the total left/right to move to the next or previous project.
+(function(){
+  const H=$('hero');let x0=0,y0=0,dx=0,mode=null;
+  H.addEventListener('touchstart',e=>{if(S.projects.length<2)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;mode='?';H.style.transition='none'},{passive:true});
+  H.addEventListener('touchmove',e=>{if(!mode)return;const t=e.touches[0],mx=t.clientX-x0,my=t.clientY-y0;
+    if(mode==='?'){if(Math.abs(mx)<8&&Math.abs(my)<8)return;mode=Math.abs(mx)>Math.abs(my)?'x':null;if(!mode)return}
+    dx=mx;const i=S.projects.findIndex(p=>p.id===S.current),edge=(dx>0&&i===0)||(dx<0&&i===S.projects.length-1);
+    H.style.transform=`translateX(${edge?dx/4:dx}px)`;H.style.opacity=String(1-Math.min(.5,Math.abs(dx)/600));e.preventDefault()},{passive:false});
+  const end=()=>{if(mode!=='x'){mode=null;return}mode=null;
+    const i=S.projects.findIndex(p=>p.id===S.current),j=dx<-60?i+1:dx>60?i-1:i;
+    H.style.transition='transform .18s ease,opacity .18s ease';
+    if(j===i||j<0||j>=S.projects.length){H.style.transform='';H.style.opacity='';return}
+    const dir=dx<0?-1:1;H.style.transform=`translateX(${dir*innerWidth*.6}px)`;H.style.opacity='0';
+    setTimeout(()=>{S.current=S.projects[j].id;filter='all';save();render();
+      H.style.transition='none';H.style.transform=`translateX(${-dir*innerWidth*.4}px)`;
+      requestAnimationFrame(()=>{H.style.transition='transform .2s ease,opacity .2s ease';H.style.transform='';H.style.opacity=''})},160)};
+  H.addEventListener('touchend',end);H.addEventListener('touchcancel',end);
+})();
+// Hold + to pick a recent category and go straight to the amount.
+(function(){
+  const B=$('addBtn'),M=$('qmenu');let holdT=null,on=false,drag=false,hot=null,noClick=false,x0=0,y0=0;
+  const setHot=b=>{if(hot===b)return;if(hot)hot.classList.remove('hot');hot=b;if(b)b.classList.add('hot')};
+  const close=()=>{M.hidden=true;drag=false;setHot(null)};
+  const pick=b=>{close();if(!b)return;openForm();fCat=b.dataset.c;renderCats()};
+  const open=()=>{const p=proj();
+    $('qmList').innerHTML=catOrder().slice(0,5).map(c=>`<button class="pm-i" type="button" role="menuitem" data-c="${c.id}">${icon(c.icon||c.id,c.c)}<span class="pm-t"><b>${esc(c.n)}</b></span></button>`).join('');
+    $('qmenu').querySelector('.pm-h').textContent=isInv(p)?'Pagesë e re te':'Shpenzim i ri te';
+    M.hidden=false;drag=true;hot=null;navigator.vibrate&&navigator.vibrate(10)};
+  M.addEventListener('click',e=>{const b=e.target.closest('.pm-i');if(b)pick(b)});
+  document.addEventListener('touchstart',e=>{if(!M.hidden&&!e.target.closest('#qmenu')&&!e.target.closest('#addBtn'))close()},{passive:true});
+  document.addEventListener('mousedown',e=>{if(!M.hidden&&!e.target.closest('#qmenu')&&!e.target.closest('#addBtn'))close()});
+  document.addEventListener('click',e=>{if(!e.target.closest('#addBtn'))return;if(noClick){e.preventDefault();noClick=false;return}if(!M.hidden){e.preventDefault();close()}},true);
+  B.addEventListener('touchstart',e=>{on=true;noClick=false;x0=e.touches[0].clientX;y0=e.touches[0].clientY;clearTimeout(holdT);
+    holdT=setTimeout(()=>{holdT=null;if(on){noClick=true;open()}},380)},{passive:true});
+  B.addEventListener('touchmove',e=>{const t=e.touches[0];
+    if(!drag){if(Math.hypot(t.clientX-x0,t.clientY-y0)>10)clearTimeout(holdT);return}
+    const el=document.elementFromPoint(t.clientX,t.clientY);setHot(el&&el.closest('#qmenu .pm-i'));e.preventDefault()},{passive:false});
+  const end=()=>{clearTimeout(holdT);on=false;if(drag){drag=false;if(hot)pick(hot)}};
+  B.addEventListener('touchend',end);B.addEventListener('touchcancel',end);
+  B.addEventListener('contextmenu',e=>e.preventDefault());
 })();
 $('clearSample').onclick=()=>{S.projects.forEach(p=>p.expenses=p.expenses.filter(e=>!e.sample));save();render();toast('Shembujt u fshinë')};
 function newProject(type){
