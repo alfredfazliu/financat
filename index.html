@@ -334,6 +334,7 @@ textarea.csv{width:100%;height:140px;border:1px solid var(--line);border-radius:
     <div class="card" style="margin-bottom:16px"><h2>Këtë muaj</h2><div class="stats" id="stats"></div><div class="delta" id="delta"></div></div>
     <div class="card" id="shopsCard" style="margin-bottom:16px"><h2 id="shopsTitle">Më shumë te</h2><div id="shops"></div></div>
     <div class="card"><h2>Sipas kategorisë</h2><div class="donut" id="donut"></div><div id="byCat" style="display:flex;flex-direction:column;gap:12px"></div></div>
+    <div class="card months" style="margin-top:16px"><h2>Sipas ditës</h2><div class="stats" id="dayStats"></div><div id="byDay" style="margin-top:12px"></div></div>
     <div class="card months" style="margin-top:16px"><h2>Sipas muajit</h2><div id="byMonth"></div></div>
   </main>
 
@@ -633,6 +634,7 @@ function render(){
     $('donut').innerHTML=d;$('donut').hidden=false;
   } else $('donut').hidden=true;
   renderMonths(ex);
+  renderDays(ex);
   renderStats(p,ex);
   renderPlan(p,ex);
   renderCatList();
@@ -771,6 +773,27 @@ $('catDel').onclick=()=>{
   used.forEach(e=>e.cat=to.id);p.cats=others;
   if(filter===c.id)filter='all';save();closeCat();render();toast('Kategoria u fshi');
 };
+// Last 14 days, one bar per day (days with nothing spent show as empty).
+function renderDays(ex){
+  const ds=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  const sum=k=>ex.filter(e=>e.date===k).reduce((s,e)=>s+e.amount,0);
+  const t=today(),mk=t.slice(0,7),dom=+t.slice(8);
+  const mtot=ex.filter(e=>e.date.startsWith(mk)&&e.date<=t).reduce((s,e)=>s+e.amount,0);
+  const st=(l,v)=>`<div class="stat"><span>${l}</span><b class="num">${v}</b></div>`;
+  $('dayStats').innerHTML=st('Sot',eur(sum(t)))+st('Dje',eur(sum(ds(1))))+st('Mesatarja',eur(mtot/dom));
+  const keys=Array.from({length:14},(_,i)=>ds(13-i)),vals=keys.map(sum),max=Math.max(...vals);
+  if(!max){$('byDay').innerHTML='<div class="empty" style="padding:12px">Asnjë shpenzim në 14 ditët e fundit.</div>';return}
+  const W=320,H=150,top=20,bottom=24,step=(W-8)/14,bw=step-6;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Shpenzimet në 14 ditët e fundit">`;
+  svg+=`<line x1="0" x2="${W}" y1="${H-bottom}" y2="${H-bottom}" stroke="var(--line)"/>`;
+  keys.forEach((k,i)=>{
+    const v=vals[i],h=v?Math.max(3,(v/max)*(H-top-bottom)):0,x=4+step*i+3,y=H-bottom-h,last=i===13;
+    if(v){svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="4" fill="var(--accent)" opacity="${last?1:.45}"/>`;
+      if(v===max||last)svg+=`<text class="v" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${v>=1000?(v/1000).toFixed(1).replace('.',',')+'k':Math.round(v)}</text>`}
+    if(i%2===1||last)svg+=`<text x="${x+bw/2}" y="${H-7}" text-anchor="middle"${last?' class="v"':''}>${last?'Sot':+k.slice(8)}</text>`;
+  });
+  $('byDay').innerHTML=svg+'</svg>';
+}
 function renderMonths(ex){
   const keys=[...new Set(ex.map(e=>e.date.slice(0,7)))].sort().slice(-6);
   if(!keys.length){$('byMonth').innerHTML='<div class="empty" style="padding:12px">Asnjë e dhënë ende.</div>';return}
